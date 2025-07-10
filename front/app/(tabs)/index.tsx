@@ -8,7 +8,7 @@ import { TemperatureHumidityGauge } from '@/components/TemperatureHumidityGauge'
 import { BatteryIndicator } from '@/components/BatteryIndicator';
 
 // Se importan los hooks
-import { useWiFiConnection, useSensorData, useWorkingSession, useNotifications } from '@/hooks';
+import { useWiFiConnection, useSensorData, useWorkingSession } from '@/hooks';
 
 // Se importan iconos
 import { Wifi, WifiOff } from 'lucide-react-native';

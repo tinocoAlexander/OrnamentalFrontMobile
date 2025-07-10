@@ -20,20 +20,25 @@ export function useWorkingSession() {
       batteryUsed: 0,
     };
     setCurrentSession(session);
-    console.log('Started new working session');
+    console.log('Nueva sesión iniciada');
   }, []);
 
   const updateSessionPath = useCallback((position: CartPosition, phase: 'mapping' | 'cutting') => {
-    if (!currentSession) return;
-
     setCurrentSession(prev => {
       if (!prev) return null;
-      
+
       if (phase === 'mapping') {
+        const updatedPath = [...prev.mappingPath, position];
+        const area = calculateArea(updatedPath);
+
+        // Si ya tiene suficientes puntos, dejamos en "mapping_completed"
+        const status = updatedPath.length >= 50 ? 'mapping_completed' : 'mapping';
+
         return {
           ...prev,
-          mappingPath: [...prev.mappingPath, position],
-          areaCovered: calculateArea([...prev.mappingPath, position]),
+          mappingPath: updatedPath,
+          areaCovered: area,
+          status,
         };
       } else {
         return {
@@ -42,27 +47,23 @@ export function useWorkingSession() {
         };
       }
     });
-  }, [currentSession]);
+  }, []);
 
   const addObstacle = useCallback((obstacle: ObstacleData) => {
-    if (!currentSession) return;
-
     setCurrentSession(prev => prev ? {
       ...prev,
       obstacles: [...prev.obstacles, obstacle],
     } : null);
-  }, [currentSession]);
+  }, []);
 
   const updateSensorData = useCallback((sensorData: SensorData) => {
-    if (!currentSession) return;
-
     setCurrentSession(prev => {
       if (!prev) return null;
-      
+
       const newSensorData = [...prev.sensorData, sensorData];
-      const avgTemp = newSensorData.reduce((sum, data) => sum + data.temperature, 0) / newSensorData.length;
-      const avgHumidity = newSensorData.reduce((sum, data) => sum + data.humidity, 0) / newSensorData.length;
-      
+      const avgTemp = newSensorData.reduce((sum, d) => sum + d.temperature, 0) / newSensorData.length;
+      const avgHumidity = newSensorData.reduce((sum, d) => sum + d.humidity, 0) / newSensorData.length;
+
       return {
         ...prev,
         sensorData: newSensorData,
@@ -71,55 +72,55 @@ export function useWorkingSession() {
         batteryUsed: Math.max(0, 100 - sensorData.batteryLevel),
       };
     });
-  }, [currentSession]);
+  }, []);
 
   const transitionToCutting = useCallback(() => {
-    if (!currentSession || currentSession.status !== 'mapping') return;
-
     setCurrentSession(prev => prev ? {
       ...prev,
       status: 'cutting',
     } : null);
-    console.log('Transitioned to cutting phase');
-  }, [currentSession]);
+    console.log('Transición a fase de corte');
+  }, []);
 
   const pauseSession = useCallback(() => {
-    if (!currentSession) return;
-
     setCurrentSession(prev => prev ? {
       ...prev,
       status: 'interrupted',
     } : null);
-    console.log('Session paused');
-  }, [currentSession]);
+    console.log('Sesión pausada');
+  }, []);
 
   const completeSession = useCallback(() => {
-    if (!currentSession) return;
+    setCurrentSession(prev => {
+      if (!prev) return null;
 
-    const completedSession: WorkingSession = {
-      ...currentSession,
-      endTime: Date.now(),
-      status: 'completed',
-    };
+      const completed = {
+        ...prev,
+        endTime: Date.now(),
+        status: 'completed',
+      };
 
-    setCurrentSession(null);
-    setSessionHistory(prev => [completedSession, ...prev]);
-    console.log('Session completed and saved to history');
-  }, [currentSession]);
+      setSessionHistory(history => [completed, ...history]);
+      console.log('Sesión completada y guardada');
+      return null;
+    });
+  }, []);
 
   const stopSession = useCallback(() => {
-    if (!currentSession) return;
+    setCurrentSession(prev => {
+      if (!prev) return null;
 
-    const stoppedSession: WorkingSession = {
-      ...currentSession,
-      endTime: Date.now(),
-      status: 'interrupted',
-    };
+      const stopped = {
+        ...prev,
+        endTime: Date.now(),
+        status: 'interrupted',
+      };
 
-    setCurrentSession(null);
-    setSessionHistory(prev => [stoppedSession, ...prev]);
-    console.log('Session stopped and saved to history');
-  }, [currentSession]);
+      setSessionHistory(history => [stopped, ...history]);
+      console.log('Sesión detenida y guardada');
+      return null;
+    });
+  }, []);
 
   return {
     currentSession,
@@ -137,7 +138,7 @@ export function useWorkingSession() {
 
 function calculateArea(path: CartPosition[]): number {
   if (path.length < 3) return 0;
-  
+
   let area = 0;
   for (let i = 0; i < path.length; i++) {
     const j = (i + 1) % path.length;

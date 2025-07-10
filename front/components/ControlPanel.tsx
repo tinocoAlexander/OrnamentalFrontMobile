@@ -18,16 +18,16 @@ export function ControlPanel({
   onPause,
   onStop,
   onReset,
-  disabled = false
+  disabled = false,
 }: ControlPanelProps) {
   const getStatusText = () => {
     switch (status) {
-      case 'mapping': return 'Mapping Area...';
-      case 'cutting': return 'Cutting Grass...';
-      case 'paused': return 'Paused';
-      case 'completed': return 'Session Complete';
-      case 'idle': return 'Ready to Start';
-      default: return 'Unknown Status';
+      case 'mapping': return 'Mapeando área…';
+      case 'cutting': return 'Cortando césped…';
+      case 'paused': return 'Pausado';
+      case 'completed': return 'Sesión completada';
+      case 'idle': return 'Listo para iniciar';
+      default: return 'Estado desconocido';
     }
   };
 
@@ -48,55 +48,57 @@ export function ControlPanel({
 
   return (
     <View style={styles.container}>
+      {/* Estado actual */}
       <View style={styles.statusContainer}>
-        <View style={[styles.statusIndicator, { backgroundColor: getStatusColor() }]} />
+        <View style={[styles.statusBadge, { backgroundColor: getStatusColor() }]} />
         <Text style={[styles.statusText, { color: getStatusColor() }]}>
           {getStatusText()}
         </Text>
       </View>
 
-      <View style={styles.controlsContainer}>
+      {/* Botones de acción */}
+      <View style={styles.buttonsRow}>
         {canStart && (
           <TouchableOpacity
-            style={[styles.button, styles.startButton, disabled && styles.disabled]}
+            style={[styles.button, styles.start, disabled && styles.disabled]}
             onPress={onStart}
             disabled={disabled}
           >
-            <Play size={20} color={COLORS.white} />
-            <Text style={styles.buttonText}>Start</Text>
+            <Play size={24} color={COLORS.white} />
+            <Text style={styles.buttonText}>Iniciar</Text>
           </TouchableOpacity>
         )}
 
         {canPause && (
           <TouchableOpacity
-            style={[styles.button, styles.pauseButton, disabled && styles.disabled]}
+            style={[styles.button, styles.pause, disabled && styles.disabled]}
             onPress={onPause}
             disabled={disabled}
           >
-            <Pause size={20} color={COLORS.white} />
-            <Text style={styles.buttonText}>Pause</Text>
+            <Pause size={24} color={COLORS.white} />
+            <Text style={styles.buttonText}>Pausar</Text>
           </TouchableOpacity>
         )}
 
         {canStop && (
           <TouchableOpacity
-            style={[styles.button, styles.stopButton, disabled && styles.disabled]}
+            style={[styles.button, styles.stop, disabled && styles.disabled]}
             onPress={onStop}
             disabled={disabled}
           >
-            <Square size={20} color={COLORS.white} />
-            <Text style={styles.buttonText}>Stop</Text>
+            <Square size={24} color={COLORS.white} />
+            <Text style={styles.buttonText}>Detener</Text>
           </TouchableOpacity>
         )}
 
         {onReset && status === 'completed' && (
           <TouchableOpacity
-            style={[styles.button, styles.resetButton, disabled && styles.disabled]}
+            style={[styles.button, styles.reset, disabled && styles.disabled]}
             onPress={onReset}
             disabled={disabled}
           >
-            <RotateCcw size={20} color={COLORS.white} />
-            <Text style={styles.buttonText}>Reset</Text>
+            <RotateCcw size={24} color={COLORS.white} />
+            <Text style={styles.buttonText}>Reiniciar</Text>
           </TouchableOpacity>
         )}
       </View>
@@ -107,52 +109,54 @@ export function ControlPanel({
 const styles = StyleSheet.create({
   container: {
     backgroundColor: COLORS.surface,
-    borderRadius: BORDER_RADIUS.lg,
-    padding: SPACING.md,
+    borderRadius: BORDER_RADIUS.xl,
+    padding: SPACING.lg,
     ...SHADOWS.md,
-    marginBottom: SPACING.md,
   },
   statusContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: SPACING.md,
     justifyContent: 'center',
+    marginBottom: SPACING.md,
   },
-  statusIndicator: {
+  statusBadge: {
     width: 12,
     height: 12,
     borderRadius: 6,
     marginRight: SPACING.sm,
   },
   statusText: {
-    fontSize: TYPOGRAPHY.base,
+    fontSize: TYPOGRAPHY.lg,
     fontFamily: TYPOGRAPHY.primarySemiBold,
   },
-  controlsContainer: {
+  buttonsRow: {
     flexDirection: 'row',
-    justifyContent: 'space-around',
+    flexWrap: 'wrap',
     gap: SPACING.sm,
+    justifyContent: 'space-between',
   },
   button: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingHorizontal: SPACING.md,
-    paddingVertical: SPACING.sm,
-    borderRadius: BORDER_RADIUS.md,
-    minWidth: 80,
+    paddingVertical: SPACING.md,
+    paddingHorizontal: SPACING.lg,
+    borderRadius: BORDER_RADIUS.lg,
     flex: 1,
+    minWidth: 100,
+    marginBottom: SPACING.sm,
+    ...SHADOWS.sm,
   },
-  startButton: {
+  start: {
     backgroundColor: COLORS.success,
   },
-  pauseButton: {
+  pause: {
     backgroundColor: COLORS.warning,
   },
-  stopButton: {
+  stop: {
     backgroundColor: COLORS.error,
   },
-  resetButton: {
+  reset: {
     backgroundColor: COLORS.primary,
   },
   disabled: {
@@ -160,7 +164,7 @@ const styles = StyleSheet.create({
   },
   buttonText: {
     color: COLORS.white,
-    fontSize: TYPOGRAPHY.sm,
+    fontSize: TYPOGRAPHY.base,
     fontFamily: TYPOGRAPHY.primarySemiBold,
     marginLeft: SPACING.xs,
   },

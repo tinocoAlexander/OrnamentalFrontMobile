@@ -1,12 +1,11 @@
 import React from 'react';
 import { View, Text, StyleSheet, ScrollView, FlatList, TouchableOpacity } from 'react-native';
 import { BrandHeader } from '@/components/BrandHeader';
-import { StatusCard } from '@/components/StatusCard';
 import { useWorkingSession } from '@/hooks/useWorkingSession';
 import { WorkingSession } from '@/types';
 import { Calendar, Clock, MapPin, Thermometer, Droplets, Battery, TriangleAlert as AlertTriangle, ChevronRight, FileText } from 'lucide-react-native';
 import { COLORS, TYPOGRAPHY, SPACING, BORDER_RADIUS, SHADOWS } from '@/constants/theme';
-import { formatDuration, formatArea, calculateSessionDuration, getWorkingHours } from '@/utils/calculations';
+import { formatDuration, formatArea, calculateSessionDuration } from '@/utils/calculations';
 
 export default function HistoryScreen() {
   const { sessionHistory } = useWorkingSession();
@@ -19,11 +18,11 @@ export default function HistoryScreen() {
     const diffInDays = Math.floor(diffInHours / 24);
 
     if (diffInDays === 0) {
-      return 'Today';
+      return 'Hoy';
     } else if (diffInDays === 1) {
-      return 'Yesterday';
+      return 'Ayer';
     } else if (diffInDays < 7) {
-      return `${diffInDays} days ago`;
+      return `Hace ${diffInDays} días`;
     } else {
       return date.toLocaleDateString();
     }
@@ -41,19 +40,20 @@ export default function HistoryScreen() {
 
   const getStatusLabel = (status: WorkingSession['status']) => {
     switch (status) {
-      case 'completed': return 'Completed';
-      case 'interrupted': return 'Interrupted';
-      case 'mapping': return 'Mapping';
-      case 'cutting': return 'Cutting';
-      default: return 'Unknown';
+      case 'completed': return 'Completada';
+      case 'interrupted': return 'Interrumpida';
+      case 'mapping': return 'Mapeando';
+      case 'cutting': return 'Cortando';
+      default: return 'Desconocido';
     }
   };
 
-  const calculateTotalStats = () => {
-    return sessionHistory.reduce((totals, session) => {
-      const duration = session.endTime ? 
-        calculateSessionDuration(session.startTime, session.endTime) : 0;
-      
+  const totalStats = sessionHistory.reduce(
+    (totals, session) => {
+      const duration = session.endTime
+        ? calculateSessionDuration(session.startTime, session.endTime)
+        : 0;
+
       return {
         totalDuration: totals.totalDuration + duration,
         totalArea: totals.totalArea + session.areaCovered,
@@ -61,37 +61,37 @@ export default function HistoryScreen() {
         avgTemperature: totals.avgTemperature + session.averageTemperature,
         avgHumidity: totals.avgHumidity + session.averageHumidity,
       };
-    }, {
+    },
+    {
       totalDuration: 0,
       totalArea: 0,
       totalObstacles: 0,
       avgTemperature: 0,
       avgHumidity: 0,
-    });
-  };
+    }
+  );
 
-  const totalStats = calculateTotalStats();
-  const avgTemperature = sessionHistory.length > 0 ? totalStats.avgTemperature / sessionHistory.length : 0;
-  const avgHumidity = sessionHistory.length > 0 ? totalStats.avgHumidity / sessionHistory.length : 0;
-
-  const handleSessionPress = (session: WorkingSession) => {
-    // TODO: Navigate to session details screen
-    console.log('Navigate to session details:', session.id);
-  };
+  const avgTemperature =
+    sessionHistory.length > 0 ? totalStats.avgTemperature / sessionHistory.length : 0;
+  const avgHumidity =
+    sessionHistory.length > 0 ? totalStats.avgHumidity / sessionHistory.length : 0;
 
   const renderSessionItem = ({ item }: { item: WorkingSession }) => {
-    const duration = item.endTime ? 
-      calculateSessionDuration(item.startTime, item.endTime) : 0;
+    const duration = item.endTime
+      ? calculateSessionDuration(item.startTime, item.endTime)
+      : 0;
 
     return (
-      <TouchableOpacity
-        style={styles.sessionCard}
-        onPress={() => handleSessionPress(item)}
-      >
+      <TouchableOpacity style={styles.sessionCard}>
         <View style={styles.sessionHeader}>
           <View style={styles.sessionInfo}>
             <Text style={styles.sessionDate}>{formatDate(item.startTime)}</Text>
-            <View style={[styles.statusLabel, { backgroundColor: getStatusColor(item.status) }]}>
+            <View
+              style={[
+                styles.statusLabel,
+                { backgroundColor: getStatusColor(item.status) },
+              ]}
+            >
               <Text style={styles.statusLabelText}>{getStatusLabel(item.status)}</Text>
             </View>
           </View>
@@ -120,11 +120,11 @@ export default function HistoryScreen() {
         <View style={styles.sessionFooter}>
           <View style={styles.statItem}>
             <AlertTriangle size={16} color={COLORS.warning} />
-            <Text style={styles.statText}>{item.obstacles.length} obstacles</Text>
+            <Text style={styles.statText}>{item.obstacles.length} obstáculos</Text>
           </View>
           <View style={styles.statItem}>
             <Battery size={16} color={COLORS.gray500} />
-            <Text style={styles.statText}>{item.batteryUsed.toFixed(0)}% used</Text>
+            <Text style={styles.statText}>{item.batteryUsed.toFixed(0)}% usado</Text>
           </View>
         </View>
       </TouchableOpacity>
@@ -134,52 +134,52 @@ export default function HistoryScreen() {
   return (
     <View style={styles.container}>
       <BrandHeader />
-      
+
       <View style={styles.content}>
-        <Text style={styles.title}>Session History</Text>
-        
+        <Text style={styles.title}>Historial de sesiones</Text>
+
         {sessionHistory.length === 0 ? (
           <View style={styles.emptyState}>
             <FileText size={48} color={COLORS.gray400} />
-            <Text style={styles.emptyTitle}>No Sessions Yet</Text>
+            <Text style={styles.emptyTitle}>Sin sesiones aún</Text>
             <Text style={styles.emptySubtitle}>
-              Complete your first mowing session to see history here
+              Completa tu primera sesión de corte para ver el historial aquí.
             </Text>
           </View>
         ) : (
           <ScrollView showsVerticalScrollIndicator={false}>
-            {/* Summary Statistics */}
+            {/* Resumen */}
             <View style={styles.section}>
-              <Text style={styles.sectionTitle}>Summary Statistics</Text>
+              <Text style={styles.sectionTitle}>Estadísticas generales</Text>
               <View style={styles.summaryCard}>
                 <View style={styles.summaryGrid}>
                   <View style={styles.summaryItem}>
                     <Clock size={20} color={COLORS.success} />
                     <Text style={styles.summaryValue}>{formatDuration(totalStats.totalDuration)}</Text>
-                    <Text style={styles.summaryLabel}>Total Time</Text>
+                    <Text style={styles.summaryLabel}>Tiempo total</Text>
                   </View>
                   <View style={styles.summaryItem}>
                     <MapPin size={20} color={COLORS.info} />
                     <Text style={styles.summaryValue}>{formatArea(totalStats.totalArea)}</Text>
-                    <Text style={styles.summaryLabel}>Total Area</Text>
+                    <Text style={styles.summaryLabel}>Área total</Text>
                   </View>
                   <View style={styles.summaryItem}>
                     <Thermometer size={20} color={COLORS.warning} />
                     <Text style={styles.summaryValue}>{avgTemperature.toFixed(1)}°C</Text>
-                    <Text style={styles.summaryLabel}>Avg Temp</Text>
+                    <Text style={styles.summaryLabel}>Temp. prom</Text>
                   </View>
                   <View style={styles.summaryItem}>
                     <Droplets size={20} color={COLORS.primary} />
                     <Text style={styles.summaryValue}>{avgHumidity.toFixed(1)}%</Text>
-                    <Text style={styles.summaryLabel}>Avg Humidity</Text>
+                    <Text style={styles.summaryLabel}>Humedad prom</Text>
                   </View>
                 </View>
               </View>
             </View>
 
-            {/* Session List */}
+            {/* Lista de sesiones */}
             <View style={styles.section}>
-              <Text style={styles.sectionTitle}>Recent Sessions</Text>
+              <Text style={styles.sectionTitle}>Sesiones recientes</Text>
               <FlatList
                 data={sessionHistory}
                 renderItem={renderSessionItem}

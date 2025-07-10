@@ -5,3 +5,4 @@ export * from './NotificationCard';
 export * from './TemperatureHumidityGauge';
 export * from './BatteryIndicator';
 export * from './StatusCard';
+export * from './StatCard';

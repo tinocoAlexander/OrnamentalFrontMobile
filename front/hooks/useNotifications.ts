@@ -11,18 +11,18 @@ export function useNotifications() {
     priority: NotificationData['priority'] = 'medium'
   ) => {
     const notification: NotificationData = {
-      id: `notification_${Date.now()}_${Math.random()}`,
+      id: `notificacion_${Date.now()}_${Math.random()}`,
       type,
       title,
       message,
       timestamp: Date.now(),
       read: false,
-      priority,
       dismissed: false,
+      priority,
     };
 
     setNotifications(prev => [notification, ...prev]);
-    console.log(`New notification: ${title}`);
+    console.log(`Nueva notificación: ${title}`);
   }, []);
 
   const dismissNotification = useCallback((id: string) => {
@@ -43,11 +43,26 @@ export function useNotifications() {
     return notifications.filter(n => !n.read && !n.dismissed).length;
   }, [notifications]);
 
-  // Auto-generate sample notifications for demo
+  // Generar notificaciones de ejemplo para demostración
   const generateSampleNotifications = useCallback(() => {
-    addNotification('obstacle', 'Obstacle Detected', 'Cart encountered an obstacle at coordinates (15.2, 8.7)', 'high');
-    addNotification('low_battery', 'Low Battery Warning', 'Battery level is at 15%. Consider charging soon.', 'medium');
-    addNotification('maintenance', 'Maintenance Due', 'Blade sharpening is due after 48 hours of operation.', 'low');
+    addNotification(
+      'obstacle',
+      'Obstáculo detectado',
+      'El carrito encontró un obstáculo en las coordenadas (15.2, 8.7)',
+      'high'
+    );
+    addNotification(
+      'low_battery',
+      'Advertencia de batería baja',
+      'El nivel de batería está en 15%. Considera cargar pronto.',
+      'medium'
+    );
+    addNotification(
+      'maintenance',
+      'Mantenimiento requerido',
+      'Se recomienda afilar las cuchillas después de 48 horas de operación.',
+      'low'
+    );
   }, [addNotification]);
 
   return {

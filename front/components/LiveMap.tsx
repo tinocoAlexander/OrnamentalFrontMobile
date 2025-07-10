@@ -12,18 +12,17 @@ interface LiveMapProps {
 }
 
 const { width: screenWidth } = Dimensions.get('window');
-const MAP_SIZE = screenWidth - (SPACING.md * 2);
+const MAP_SIZE = screenWidth - SPACING.md * 2;
 
-export function LiveMap({ 
-  mappingPath, 
-  cuttingPath, 
-  currentPosition, 
-  obstacles, 
-  phase 
+export function LiveMap({
+  mappingPath,
+  cuttingPath,
+  currentPosition,
+  obstacles,
+  phase,
 }: LiveMapProps) {
-  const calculateArea = (path: CartPosition[]): number => {
+  const calcularArea = (path: CartPosition[]): number => {
     if (path.length < 3) return 0;
-    
     let area = 0;
     for (let i = 0; i < path.length; i++) {
       const j = (i + 1) % path.length;
@@ -33,7 +32,7 @@ export function LiveMap({
     return Math.abs(area) / 2;
   };
 
-  const getPhaseColor = () => {
+  const colorFase = () => {
     switch (phase) {
       case 'mapping': return COLORS.info;
       case 'cutting': return COLORS.success;
@@ -42,67 +41,65 @@ export function LiveMap({
     }
   };
 
-  const getPhaseText = () => {
+  const textoFase = () => {
     switch (phase) {
-      case 'mapping': return 'Mapping Area';
-      case 'cutting': return 'Cutting Grass';
-      case 'completed': return 'Session Complete';
-      default: return 'Idle';
+      case 'mapping': return 'Mapeando área';
+      case 'cutting': return 'Cortando césped';
+      case 'completed': return 'Sesión completada';
+      default: return 'Inactivo';
     }
   };
 
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.title}>Live Map</Text>
-        <View style={[styles.phaseIndicator, { backgroundColor: getPhaseColor() }]}>
-          <Text style={styles.phaseText}>{getPhaseText()}</Text>
+        <Text style={styles.title}>Mapa en vivo</Text>
+        <View style={[styles.phaseIndicator, { backgroundColor: colorFase() }]}>
+          <Text style={styles.phaseText}>{textoFase()}</Text>
         </View>
       </View>
 
       <View style={styles.mapContainer}>
         <View style={styles.mapArea}>
-          {/* TODO: Implement actual map rendering using react-native-svg */}
+          {/* Aquí iría el mapa real (ej: react-native-svg) */}
           <View style={styles.mapPlaceholder}>
-            <Text style={styles.mapText}>Real-time Map Visualization</Text>
-            
+            <Text style={styles.mapText}>Visualización del mapa en tiempo real</Text>
+
             <View style={styles.statsContainer}>
               <View style={styles.statItem}>
-                <Text style={styles.statLabel}>Mapping Path:</Text>
-                <Text style={styles.statValue}>{mappingPath.length} points</Text>
+                <Text style={styles.statLabel}>Puntos del mapeo:</Text>
+                <Text style={styles.statValue}>{mappingPath.length}</Text>
               </View>
-              
+
               <View style={styles.statItem}>
-                <Text style={styles.statLabel}>Cutting Progress:</Text>
-                <Text style={styles.statValue}>{cuttingPath.length} points</Text>
+                <Text style={styles.statLabel}>Progreso del corte:</Text>
+                <Text style={styles.statValue}>{cuttingPath.length}</Text>
               </View>
-              
+
               <View style={styles.statItem}>
-                <Text style={styles.statLabel}>Area Mapped:</Text>
-                <Text style={styles.statValue}>{calculateArea(mappingPath).toFixed(1)} m²</Text>
+                <Text style={styles.statLabel}>Área mapeada:</Text>
+                <Text style={styles.statValue}>{calcularArea(mappingPath).toFixed(1)} m²</Text>
               </View>
-              
+
               <View style={styles.statItem}>
-                <Text style={styles.statLabel}>Obstacles:</Text>
+                <Text style={styles.statLabel}>Obstáculos:</Text>
                 <Text style={styles.statValue}>{obstacles.length}</Text>
               </View>
             </View>
           </View>
 
-          {/* Current Position Indicator */}
           {currentPosition && (
             <View style={styles.currentPosition}>
               <View style={styles.positionDot} />
               <Text style={styles.positionText}>
-                Current: ({currentPosition.x.toFixed(1)}, {currentPosition.y.toFixed(1)})
+                Actual: ({currentPosition.x.toFixed(1)}, {currentPosition.y.toFixed(1)})
               </Text>
             </View>
           )}
 
-          {/* Obstacles Indicator */}
           {obstacles.length > 0 && (
             <View style={styles.obstaclesIndicator}>
-              <Text style={styles.obstaclesText}>⚠️ {obstacles.length} obstacles</Text>
+              <Text style={styles.obstaclesText}>⚠️ {obstacles.length} obstáculos</Text>
             </View>
           )}
         </View>
@@ -114,10 +111,10 @@ export function LiveMap({
 const styles = StyleSheet.create({
   container: {
     backgroundColor: COLORS.surface,
-    borderRadius: BORDER_RADIUS.lg,
+    borderRadius: BORDER_RADIUS.xl,
     padding: SPACING.md,
     ...SHADOWS.md,
-    marginBottom: SPACING.md,
+    marginBottom: SPACING.lg,
   },
   header: {
     flexDirection: 'row',
@@ -126,17 +123,17 @@ const styles = StyleSheet.create({
     marginBottom: SPACING.md,
   },
   title: {
-    fontSize: TYPOGRAPHY.lg,
-    fontFamily: TYPOGRAPHY.primarySemiBold,
-    color: COLORS.gray800,
+    fontSize: TYPOGRAPHY.xl,
+    fontFamily: TYPOGRAPHY.primaryBold,
+    color: COLORS.gray900,
   },
   phaseIndicator: {
-    paddingHorizontal: SPACING.sm,
-    paddingVertical: SPACING.xs / 2,
+    paddingHorizontal: SPACING.md,
+    paddingVertical: SPACING.xs,
     borderRadius: BORDER_RADIUS.full,
   },
   phaseText: {
-    fontSize: TYPOGRAPHY.xs,
+    fontSize: TYPOGRAPHY.sm,
     fontFamily: TYPOGRAPHY.primaryMedium,
     color: COLORS.white,
   },
@@ -144,10 +141,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   mapArea: {
-    width: MAP_SIZE - (SPACING.md * 2),
-    height: MAP_SIZE - (SPACING.md * 2),
+    width: MAP_SIZE - SPACING.md,
+    height: MAP_SIZE - SPACING.md,
     backgroundColor: COLORS.surfaceSecondary,
-    borderRadius: BORDER_RADIUS.md,
+    borderRadius: BORDER_RADIUS.lg,
     position: 'relative',
     borderWidth: 2,
     borderColor: COLORS.primary,
@@ -187,8 +184,9 @@ const styles = StyleSheet.create({
     bottom: SPACING.sm,
     left: SPACING.sm,
     backgroundColor: COLORS.info,
-    borderRadius: BORDER_RADIUS.sm,
-    padding: SPACING.xs,
+    borderRadius: BORDER_RADIUS.md,
+    paddingHorizontal: SPACING.sm,
+    paddingVertical: SPACING.xs,
     flexDirection: 'row',
     alignItems: 'center',
   },
@@ -209,8 +207,9 @@ const styles = StyleSheet.create({
     top: SPACING.sm,
     right: SPACING.sm,
     backgroundColor: COLORS.warning,
-    borderRadius: BORDER_RADIUS.sm,
-    padding: SPACING.xs,
+    borderRadius: BORDER_RADIUS.md,
+    paddingHorizontal: SPACING.sm,
+    paddingVertical: SPACING.xs,
   },
   obstaclesText: {
     fontSize: TYPOGRAPHY.xs,

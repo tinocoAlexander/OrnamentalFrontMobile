@@ -7,15 +7,15 @@ import { Trash2, Bell, BellOff } from 'lucide-react-native';
 import { COLORS, TYPOGRAPHY, SPACING, BORDER_RADIUS, SHADOWS } from '@/constants/theme';
 
 export default function NotificationsScreen() {
-  const { 
-    notifications, 
-    dismissNotification, 
-    clearAllNotifications, 
+  const {
+    notifications,
+    dismissNotification,
+    clearAllNotifications,
     getUnreadCount,
-    generateSampleNotifications 
+    generateSampleNotifications
   } = useNotifications();
 
-  // Generate sample notifications on first load for demo
+  // Generar notificaciones de ejemplo al cargar por primera vez
   useEffect(() => {
     if (notifications.length === 0) {
       generateSampleNotifications();
@@ -27,40 +27,40 @@ export default function NotificationsScreen() {
   return (
     <View style={styles.container}>
       <BrandHeader />
-      
+
       <View style={styles.content}>
         <View style={styles.header}>
           <View style={styles.titleContainer}>
-            <Text style={styles.title}>Notifications</Text>
+            <Text style={styles.title}>Notificaciones</Text>
             {unreadCount > 0 && (
               <View style={styles.badge}>
                 <Text style={styles.badgeText}>{unreadCount}</Text>
               </View>
             )}
           </View>
-          
+
           {notifications.length > 0 && (
             <TouchableOpacity
               style={styles.clearButton}
               onPress={clearAllNotifications}
             >
               <Trash2 size={20} color={COLORS.error} />
-              <Text style={styles.clearButtonText}>Clear All</Text>
+              <Text style={styles.clearButtonText}>Borrar todas</Text>
             </TouchableOpacity>
           )}
         </View>
 
-        <ScrollView 
-          style={styles.scrollView} 
+        <ScrollView
+          style={styles.scrollView}
           showsVerticalScrollIndicator={false}
           contentContainerStyle={styles.scrollContent}
         >
           {notifications.length === 0 ? (
             <View style={styles.emptyState}>
               <BellOff size={48} color={COLORS.gray400} />
-              <Text style={styles.emptyTitle}>No Notifications</Text>
+              <Text style={styles.emptyTitle}>Sin notificaciones</Text>
               <Text style={styles.emptySubtitle}>
-                You'll see alerts for obstacles, battery status, and maintenance here
+                Aquí verás alertas sobre obstáculos, batería y mantenimiento
               </Text>
             </View>
           ) : (

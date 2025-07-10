@@ -59,15 +59,6 @@ export default function TabLayout() {
           ),
         }}
       />
-      <Tabs.Screen
-        name="settings"
-        options={{
-          title: 'Configuración',
-          tabBarIcon: ({ size, color }) => (
-            <Settings size={size} color={color} />
-          ),
-        }}
-      />
     </Tabs>
   );
 }
