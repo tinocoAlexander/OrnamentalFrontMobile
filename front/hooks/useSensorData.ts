@@ -35,7 +35,7 @@ export function useSensorData() {
         dht11: Math.random() > 0.96 ? 'desconectado' : 'conectado',
         lastChecked: Date.now(),
       }));
-    }, 120000); // Se actualiza cada 2 minutos
+    }, 1200); // Se actualiza cada 2 minutos
 
     return () => clearInterval(interval);
   }, []);

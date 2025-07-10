@@ -3,13 +3,15 @@ import { useEffect } from 'react';
 
 // Se importan componentes y utilidades necesarias para el Dashboard.
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
-import { BrandHeader, StatusCard, SensorChart } from '@/components';
+import { BrandHeader, StatusCard } from '@/components';
+import { TemperatureHumidityGauge } from '@/components/TemperatureHumidityGauge';
+import { BatteryIndicator } from '@/components/BatteryIndicator';
 
 // Se importan los hooks
 import { useWiFiConnection, useSensorData, useWorkingSession, useNotifications } from '@/hooks';
 
 // Se importan iconos
-import { Battery, Thermometer, Droplets, Wifi, WifiOff, Activity, Clock, MapPin, TriangleAlert as AlertTriangle } from 'lucide-react-native';
+import { Wifi, WifiOff } from 'lucide-react-native';
 
 // Constantes de css
 import { COLORS, TYPOGRAPHY, SPACING } from '@/constants/theme';
@@ -54,61 +56,18 @@ export default function DashboardScreen() {
         </View>
 
 
-        {/* Sensor Charts */}
+        {/* Graficas de sensores */}
         {sensorData.length > 0 && (
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Sensor Data Trends</Text>
-            <SensorChart
-              data={sensorData}
-              type="temperature"
-              title="Temperature Over Time"
-              compact
-            />
-            <SensorChart
-              data={sensorData}
-              type="humidity"
-              title="Humidity Over Time"
-              compact
-            />
-            <SensorChart
-              data={sensorData}
-              type="battery"
-              title="Battery Level"
-              compact
-            />
+            <Text style={styles.sectionTitle}>Tendencias de Datos de Sensores</Text>
+
+            {/* Componente para temperatura y humedad */}
+            <TemperatureHumidityGauge data={sensorData} />
+
+            {/* Batería */}
+            <BatteryIndicator data={sensorData} />
           </View>
         )}
-
-        {/* Sensor Health */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Sensor Health</Text>
-          <View style={styles.statusGrid}>
-            <StatusCard
-              title="Ultrasonido"
-              value={sensorHealth.ultrasonic.charAt(0).toUpperCase() + sensorHealth.ultrasonic.slice(1)}
-              status={sensorHealth.ultrasonic === 'conectado' ? 'healthy' : 'warning'}
-              compact
-            />
-            <StatusCard
-              title="Giroscopio"
-              value={sensorHealth.gyroscope.charAt(0).toUpperCase() + sensorHealth.gyroscope.slice(1)}
-              status={sensorHealth.gyroscope === 'conectado' ? 'healthy' : 'warning'}
-              compact
-            />
-            <StatusCard
-              title="Acelerómetro"
-              value={sensorHealth.accelerometer.charAt(0).toUpperCase() + sensorHealth.accelerometer.slice(1)}
-              status={sensorHealth.accelerometer === 'conectado' ? 'healthy' : 'warning'}
-              compact
-            />
-            <StatusCard
-              title="DHT11"
-              value={sensorHealth.dht11.charAt(0).toUpperCase() + sensorHealth.dht11.slice(1)}
-              status={sensorHealth.dht11 === 'conectado' ? 'healthy' : 'warning'}
-              compact
-            />
-          </View>
-        </View>
 
       </ScrollView>
     </View>

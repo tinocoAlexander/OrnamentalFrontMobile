@@ -11,7 +11,6 @@ import {
 import { useFrameworkReady } from '@/hooks/useFrameworkReady';
 import * as SplashScreen from 'expo-splash-screen';
 
-// Prevent the splash screen from auto-hiding
 SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
