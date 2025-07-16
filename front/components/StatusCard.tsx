@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { COLORS, TYPOGRAPHY, SPACING, BORDER_RADIUS, SHADOWS } from '@/constants/theme';
+import LinearGradient from 'react-native-linear-gradient';
 
 interface StatusCardProps {
   title: string;
@@ -11,6 +12,10 @@ interface StatusCardProps {
   compact?: boolean;
 }
 
+/**
+ * StatusCard muestra un bloque informativo con un título, valor, estado y un icono opcional.
+ * Su color y fondo cambian según el estado ('healthy', 'warning', 'error', 'info').
+ */
 export function StatusCard({ 
   title, 
   value, 
@@ -19,6 +24,7 @@ export function StatusCard({
   icon,
   compact = false 
 }: StatusCardProps) {
+  // Devuelve los colores asociados al estado
   const getStatusColors = () => {
     switch (status) {
       case 'healthy': return { text: COLORS.success, bg: ['#d4fc79', '#96e6a1'] };
@@ -32,27 +38,30 @@ export function StatusCard({
   const { text, bg } = getStatusColors();
 
   return (
-    <View style={[
-      styles.container,
-      compact && styles.compact,
-      {
-        backgroundColor: undefined,
-        shadowColor: text,
-      }
-    ]}>
-      <View style={[
-        styles.background,
-        {
-          background: `linear-gradient(135deg, ${bg[0]}, ${bg[1]})`
-        }
-      ]} />
+    <View
+      style={[
+        styles.container,
+        compact && styles.compact,
+        { shadowColor: text }
+      ]}
+    >
+      {/* Fondo degradado */}
+      <LinearGradient
+        colors={bg}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={styles.background}
+      />
 
+      {/* Contenido */}
       <View style={styles.content}>
         <View style={styles.header}>
           {icon && <View style={styles.icon}>{icon}</View>}
           <Text style={styles.title}>{title}</Text>
         </View>
+
         <Text style={[styles.value, { color: text }]}>{value}</Text>
+
         {subtitle && <Text style={styles.subtitle}>{subtitle}</Text>}
       </View>
     </View>
@@ -74,6 +83,7 @@ const styles = StyleSheet.create({
   background: {
     ...StyleSheet.absoluteFillObject,
     opacity: 0.15,
+    borderRadius: BORDER_RADIUS.xl,
   },
   content: {
     zIndex: 1,

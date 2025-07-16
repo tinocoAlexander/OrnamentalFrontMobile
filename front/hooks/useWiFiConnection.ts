@@ -1,70 +1,45 @@
-// Este es un hook personalizado para poder hacer la conexion a la red AP del ESP32
-import { useState, useEffect } from 'react'; 
+import { useState } from 'react';
 import { WiFiConnection } from '@/types';
 
+/**
+ * Hook para simular la conexión Wi-Fi al carrito.
+ * - No utiliza backend.
+ * - Solo sirve para UI.
+ */
 export function useWiFiConnection() {
   const [connection, setConnection] = useState<WiFiConnection>({
     connected: false,
-    signalStrength: 0,
     ssid: 'Carrito Inteligente',
   });
 
   const [isConnecting, setIsConnecting] = useState(false);
 
+  /**
+   * Simula la conexión al carrito.
+   */
   const connectToCart = async () => {
     setIsConnecting(true);
-    
-    try {
-      // TODO: Falta implementar la logica de conexion de internet a la red Wi-Fi del ESP32
-      console.log('Conectandose al ESP32');
-      
-      // De momento, solo simulamos una conexion exitosa
-      await new Promise(resolve => setTimeout(resolve, 3000));
-      
-      setConnection(prev => ({
-        ...prev,
-        connected: true,
-        signalStrength: 85,
-        ipAddress: '192.168.4.2', 
-        lastConnected: Date.now(),
-      }));
 
-      console.log('Conectado al ESP32 exitosamente');
+    try {
+      console.log('Simulando conexión al ESP32...');
+      await new Promise(resolve => setTimeout(resolve, 2000)); // Simula espera
+      setConnection({ connected: true, ssid: 'Carrito Inteligente' });
+      console.log('Conexión simulada exitosa');
     } catch (error) {
-      console.error('Error al conectar al carrito:', error);
-      setConnection(prev => ({
-        ...prev,
-        connected: false,
-        signalStrength: 0,
-      }));
+      console.error('Error simulando la conexión:', error);
+      setConnection({ connected: false, ssid: 'Carrito Inteligente' });
     } finally {
       setIsConnecting(false);
     }
   };
 
+  /**
+   * Simula la desconexión del carrito.
+   */
   const disconnectFromCart = () => {
-    setConnection(prev => ({
-      ...prev,
-      connected: false,
-      signalStrength: 0,
-      ipAddress: undefined,
-    }));
-    console.log('Desconectado del carrito');
+    setConnection({ connected: false, ssid: 'Carrito Inteligente' });
+    console.log('Conexión simulada finalizada');
   };
-
-  // Simula que si esta monitoreando la señal Wi-Fi cada 5 segundos
-  useEffect(() => {
-    if (!connection.connected) return;
-
-    const interval = setInterval(() => {
-      setConnection(prev => ({
-        ...prev,
-        signalStrength: Math.max(0, Math.min(100, prev.signalStrength + (Math.random() - 0.5) * 10)),
-      }));
-    }, 5000);
-
-    return () => clearInterval(interval);
-  }, [connection.connected]);
 
   return {
     connection,

@@ -9,29 +9,42 @@ interface GaugeProps {
   data: SensorData[];
 }
 
+/**
+ * Componente TemperatureHumidityGauge
+ * 
+ * Muestra un medidor circular con los últimos datos de temperatura o humedad.
+ * Permite alternar entre ambos valores y muestra un degradado dinámico en función del rango.
+ */
 export const TemperatureHumidityGauge = ({ data }: GaugeProps) => {
+  // Estado para alternar entre temperatura y humedad
   const [current, setCurrent] = useState<'temperature' | 'humidity'>('temperature');
 
+  // Último dato disponible o valores por defecto
   const last = data[data.length - 1] || { temperature: 0, humidity: 0, timestamp: Date.now() };
   const value = current === 'temperature' ? last.temperature : last.humidity;
   const unit = current === 'temperature' ? '°C' : '%';
   const min = current === 'temperature' ? 10 : 20;
   const max = current === 'temperature' ? 40 : 100;
 
+  // Porcentaje relativo del valor respecto al rango
   const percentage = Math.min(Math.max((value - min) / (max - min), 0), 1);
+
+  // Parámetros del círculo SVG
   const radius = 70;
   const strokeWidth = 12;
   const circumference = 2 * Math.PI * radius;
   const dashOffset = circumference * (1 - percentage);
 
+  // Alternar entre temperatura y humedad
   const switchMetric = () => {
     setCurrent(prev => (prev === 'temperature' ? 'humidity' : 'temperature'));
   };
 
-  // 🔷 colores dinámicos
+  // Colores dinámicos según el valor actual
   let color = COLORS.info;
   let gradientStart = '#6DD5FA';
   let gradientEnd = '#2980B9';
+
   if (current === 'temperature') {
     if (value < 15) {
       color = COLORS.info;
@@ -64,10 +77,12 @@ export const TemperatureHumidityGauge = ({ data }: GaugeProps) => {
 
   return (
     <View style={styles.container}>
+      {/* Título */}
       <Text style={styles.title}>
         {current === 'temperature' ? 'Temperatura' : 'Humedad'}
       </Text>
 
+      {/* Selector y medidor SVG */}
       <View style={styles.gaugeContainer}>
         <TouchableOpacity onPress={switchMetric} style={styles.arrow}>
           <ChevronLeft color={COLORS.gray400} size={28} />
@@ -80,7 +95,9 @@ export const TemperatureHumidityGauge = ({ data }: GaugeProps) => {
               <Stop offset="100%" stopColor={gradientEnd} />
             </LinearGradient>
           </Defs>
+
           <G rotation="-90" origin="90,90">
+            {/* Círculo gris de fondo */}
             <Circle
               cx="90"
               cy="90"
@@ -89,6 +106,7 @@ export const TemperatureHumidityGauge = ({ data }: GaugeProps) => {
               strokeWidth={strokeWidth}
               fill="none"
             />
+            {/* Círculo con progreso */}
             <Circle
               cx="90"
               cy="90"
@@ -108,6 +126,7 @@ export const TemperatureHumidityGauge = ({ data }: GaugeProps) => {
         </TouchableOpacity>
       </View>
 
+      {/* Valor actual */}
       <View style={styles.valueContainer}>
         {current === 'temperature' ? (
           <Flame color={color} size={24} />
@@ -119,6 +138,7 @@ export const TemperatureHumidityGauge = ({ data }: GaugeProps) => {
         </Text>
       </View>
 
+      {/* Hora de la última actualización */}
       <Text style={styles.time}>
         Última actualización: {new Date(last.timestamp).toLocaleTimeString()}
       </Text>

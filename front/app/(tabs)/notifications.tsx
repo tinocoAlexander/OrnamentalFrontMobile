@@ -1,37 +1,46 @@
 import React, { useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
+
+// Componentes internos
 import { BrandHeader } from '@/components/BrandHeader';
 import { NotificationCard } from '@/components/NotificationCard';
-import { useNotifications } from '@/hooks/useNotifications';
-import { Trash2, Bell, BellOff } from 'lucide-react-native';
-import { COLORS, TYPOGRAPHY, SPACING, BORDER_RADIUS, SHADOWS } from '@/constants/theme';
 
+// Hook para manejar notificaciones desde el backend
+import { useNotifications } from '@/hooks/useNotifications';
+
+// Iconos
+import { Trash2, BellOff } from 'lucide-react-native';
+
+// Constantes de estilos
+import { COLORS, TYPOGRAPHY, SPACING, BORDER_RADIUS } from '@/constants/theme';
+
+/**
+ * Pantalla para mostrar las notificaciones.
+ * Muestra la lista de notificaciones obtenida desde el backend
+ * y permite eliminarlas individualmente o todas.
+ */
 export default function NotificationsScreen() {
   const {
-    notifications,
-    dismissNotification,
-    clearAllNotifications,
-    getUnreadCount,
-    generateSampleNotifications
+    notifications,             // Lista de notificaciones
+    dismissNotification,       // Eliminar una notificación
+    clearAllNotifications,     // Eliminar todas las notificaciones
+    getUnreadCount,            // Obtener cuántas no han sido leídas
   } = useNotifications();
-
-  // Generar notificaciones de ejemplo al cargar por primera vez
-  useEffect(() => {
-    if (notifications.length === 0) {
-      generateSampleNotifications();
-    }
-  }, [notifications.length, generateSampleNotifications]);
 
   const unreadCount = getUnreadCount();
 
   return (
     <View style={styles.container}>
+      {/* Encabezado con branding */}
       <BrandHeader />
 
       <View style={styles.content}>
+        {/* Cabecera con título y botón de borrar */}
         <View style={styles.header}>
           <View style={styles.titleContainer}>
             <Text style={styles.title}>Notificaciones</Text>
+
+            {/* Si hay no leídas, muestra el contador */}
             {unreadCount > 0 && (
               <View style={styles.badge}>
                 <Text style={styles.badgeText}>{unreadCount}</Text>
@@ -39,6 +48,7 @@ export default function NotificationsScreen() {
             )}
           </View>
 
+          {/* Botón para borrar todas las notificaciones */}
           {notifications.length > 0 && (
             <TouchableOpacity
               style={styles.clearButton}
@@ -50,17 +60,19 @@ export default function NotificationsScreen() {
           )}
         </View>
 
+        {/* Lista de notificaciones */}
         <ScrollView
           style={styles.scrollView}
           showsVerticalScrollIndicator={false}
           contentContainerStyle={styles.scrollContent}
         >
           {notifications.length === 0 ? (
+            // Estado vacío si no hay notificaciones
             <View style={styles.emptyState}>
               <BellOff size={48} color={COLORS.gray400} />
               <Text style={styles.emptyTitle}>Sin notificaciones</Text>
               <Text style={styles.emptySubtitle}>
-                Aquí verás alertas sobre obstáculos, batería y mantenimiento
+                Aquí verás alertas sobre obstáculos, sesiones y errores.
               </Text>
             </View>
           ) : (
@@ -80,6 +92,7 @@ export default function NotificationsScreen() {
   );
 }
 
+// 🎨 Estilos
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -121,7 +134,7 @@ const styles = StyleSheet.create({
   clearButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: COLORS.error + '10',
+    backgroundColor: `${COLORS.error}10`,
     paddingHorizontal: SPACING.sm,
     paddingVertical: SPACING.xs,
     borderRadius: BORDER_RADIUS.md,

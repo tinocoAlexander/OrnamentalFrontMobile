@@ -1,77 +1,92 @@
-import { useState, useCallback } from 'react';
-import { NotificationData } from '@/types';
+import { useState, useEffect, useCallback } from 'react';
+import axios from 'axios';
+import { Notification } from '@/types';
 
+const API_URL = 'https://ornamentalbackmobile-production.up.railway.app/api';
+
+/**
+ * Hook para gestionar las notificaciones del sistema.
+ * - Obtiene las notificaciones desde el backend.
+ * - Permite marcarlas como leídas y eliminarlas por id.
+ * - Permite eliminar todas las notificaciones.
+ * - Calcula cuántas no han sido leídas.
+ */
 export function useNotifications() {
-  const [notifications, setNotifications] = useState<NotificationData[]>([]);
+  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const addNotification = useCallback((
-    type: NotificationData['type'],
-    title: string,
-    message: string,
-    priority: NotificationData['priority'] = 'medium'
-  ) => {
-    const notification: NotificationData = {
-      id: `notificacion_${Date.now()}_${Math.random()}`,
-      type,
-      title,
-      message,
-      timestamp: Date.now(),
-      read: false,
-      dismissed: false,
-      priority,
-    };
-
-    setNotifications(prev => [notification, ...prev]);
-    console.log(`Nueva notificación: ${title}`);
+  /**
+   * Carga las notificaciones desde el backend.
+   */
+  const fetchNotifications = useCallback(async () => {
+    setLoading(true);
+    try {
+      const { data } = await axios.get<{ success: boolean; data: Notification[] }>(`${API_URL}/notifications`);
+      setNotifications(data.data);
+      setError(null);
+    } catch (err) {
+      setError('Error fetching notifications');
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
-  const dismissNotification = useCallback((id: string) => {
-    setNotifications(prev => prev.filter(notification => notification.id !== id));
-  }, []);
+  /**
+   * Elimina una notificación por id.
+   */
+  const dismissNotification = useCallback(async (id: string) => {
+    try {
+      await axios.delete(`${API_URL}/notifications/${id}`);
+      fetchNotifications();
+    } catch (err) {
+      console.error('Error dismissing notification');
+    }
+  }, [fetchNotifications]);
 
-  const markAsRead = useCallback((id: string) => {
-    setNotifications(prev => prev.map(notification =>
-      notification.id === id ? { ...notification, read: true } : notification
-    ));
-  }, []);
+  /**
+   * Elimina todas las notificaciones.
+   */
+  const clearAllNotifications = useCallback(async () => {
+    try {
+      await axios.delete(`${API_URL}/notifications`);
+      fetchNotifications();
+    } catch (err) {
+      console.error('Error clearing notifications');
+    }
+  }, [fetchNotifications]);
 
-  const clearAllNotifications = useCallback(() => {
-    setNotifications([]);
-  }, []);
+  /**
+   * Marca una notificación como leída.
+   */
+  const markAsRead = useCallback(async (id: string) => {
+    try {
+      await axios.patch(`${API_URL}/notifications/${id}/read`);
+      fetchNotifications();
+    } catch (err) {
+      console.error('Error marking notification as read');
+    }
+  }, [fetchNotifications]);
 
-  const getUnreadCount = useCallback(() => {
-    return notifications.filter(n => !n.read && !n.dismissed).length;
-  }, [notifications]);
+  /**
+   * Devuelve la cantidad de notificaciones no leídas.
+   */
+  const getUnreadCount = () => {
+    return notifications.filter((n) => !n.read).length;
+  };
 
-  // Generar notificaciones de ejemplo para demostración
-  const generateSampleNotifications = useCallback(() => {
-    addNotification(
-      'obstacle',
-      'Obstáculo detectado',
-      'El carrito encontró un obstáculo en las coordenadas (15.2, 8.7)',
-      'high'
-    );
-    addNotification(
-      'low_battery',
-      'Advertencia de batería baja',
-      'El nivel de batería está en 15%. Considera cargar pronto.',
-      'medium'
-    );
-    addNotification(
-      'maintenance',
-      'Mantenimiento requerido',
-      'Se recomienda afilar las cuchillas después de 48 horas de operación.',
-      'low'
-    );
-  }, [addNotification]);
+  useEffect(() => {
+    fetchNotifications();
+  }, [fetchNotifications]);
 
   return {
     notifications,
-    addNotification,
+    loading,
+    error,
+    fetchNotifications,
     dismissNotification,
-    markAsRead,
     clearAllNotifications,
+    markAsRead,
     getUnreadCount,
-    generateSampleNotifications,
   };
 }

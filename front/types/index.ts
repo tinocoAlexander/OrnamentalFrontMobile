@@ -1,79 +1,76 @@
+/**
+ * Posición del carrito en el mapa
+ */
 export interface CartPosition {
   x: number;
   y: number;
   timestamp: number;
 }
 
+/**
+ * Lectura de sensores registrada
+ */
 export interface SensorData {
+  _id: string;
   temperature: number;
   humidity: number;
-  batteryLevel: number;
-  timestamp: number;
+  timestamp: string; // ISO date string
 }
 
-export interface SensorHealth {
-  ultrasonic: 'conectado' | 'desconectado';
-  gyroscope: 'conectado' | 'desconectado';
-  accelerometer: 'conectado' | 'desconectado';
-  dht11: 'conectado' | 'desconectado';
-  lastChecked: number;
-}
-
-export interface ObstacleData {
+/**
+ * Obstáculo detectado
+ */
+export interface Obstacle {
   position: CartPosition;
-  type: 'ultrasonido';
-  severity: 'bajo' | 'medio' | 'alto';
-  timestamp: number;
+  severity: 'low' | 'medium' | 'high';
+  timestamp: string; // ISO date string
 }
 
-export interface WorkingSession {
-  id: string;
-  startTime: number;
-  endTime?: number;
+/**
+ * Datos de una sesión de trabajo
+ */
+export interface Session {
+  _id: string;
+  startTime: string; // ISO date string
+  endTime?: string;  // ISO date string
+  status: 'mapping' | 'cutting' | 'completed' | 'interrupted';
   mappingPath: CartPosition[];
   cuttingPath: CartPosition[];
-  areaCovered: number; // in square meters
-  obstacles: ObstacleData[];
-  status: 'mapping' | 'cutting' | 'completed' | 'interrupted';
-  sensorData: SensorData[];
+  areaCovered: number;
+  obstacles: Obstacle[];
   averageTemperature: number;
   averageHumidity: number;
-  batteryUsed: number; // percentage
+  createdAt?: string;
+  updatedAt?: string;
 }
 
-export interface NotificationData {
+/**
+ * Notificación en la app
+ */
+export interface Notification {
   id: string;
-  type: 'obstacle' | 'low_battery' | 'maintenance' | 'session_complete' | 'error' | 'connection';
+  type: 'obstacle' | 'session_complete' | 'error' | 'connection';
   title: string;
   message: string;
   timestamp: number;
   read: boolean;
-  priority: 'low' | 'medium' | 'high';
   dismissed: boolean;
+  priority: 'low' | 'medium' | 'high';
 }
 
-export interface MaintenanceRecord {
-  id: string;
-  type: 'blade_replacement' | 'cleaning' | 'battery_check' | 'sensor_calibration' | 'general';
-  lastPerformed: number;
-  nextDue: number;
-  hoursWorked: number;
-  description: string;
-}
-
+/**
+ * Conexión Wi-Fi simulada
+ */
 export interface WiFiConnection {
   connected: boolean;
-  signalStrength: number;
   ssid: string;
-  ipAddress?: string;
-  lastConnected?: number;
 }
 
+/**
+ * Resumen del estado del sistema (opcional)
+ */
 export interface SystemDiagnostics {
   appVersion: string;
-  cartFirmwareVersion?: string;
-  connectionStatus: WiFiConnection;
-  sensorHealth: SensorHealth;
-  lastSync: number;
+  lastSync: string; // ISO date string
   totalWorkingHours: number;
 }

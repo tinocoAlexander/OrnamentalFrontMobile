@@ -1,149 +1,99 @@
-import { useState, useCallback } from 'react';
-import { WorkingSession, CartPosition, ObstacleData, SensorData } from '@/types';
+import { useState, useEffect } from 'react';
+import axios from 'axios';
+import { Session } from '@/types';
 
+const API_URL = 'https://ornamentalbackmobile-production.up.railway.app';
+
+/**
+ * Hook para gestionar las sesiones de trabajo.
+ * - Obtiene historial y sesión actual.
+ * - Permite iniciar, detener y actualizar estado.
+ */
 export function useWorkingSession() {
-  const [currentSession, setCurrentSession] = useState<WorkingSession | null>(null);
-  const [sessionHistory, setSessionHistory] = useState<WorkingSession[]>([]);
+  const [currentSession, setCurrentSession] = useState<Session | null>(null);
+  const [sessionHistory, setSessionHistory] = useState<Session[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const startSession = useCallback(() => {
-    const session: WorkingSession = {
-      id: `session_${Date.now()}`,
-      startTime: Date.now(),
-      mappingPath: [],
-      cuttingPath: [],
-      areaCovered: 0,
-      obstacles: [],
-      status: 'mapping',
-      sensorData: [],
-      averageTemperature: 0,
-      averageHumidity: 0,
-      batteryUsed: 0,
-    };
-    setCurrentSession(session);
-    console.log('Nueva sesión iniciada');
+  useEffect(() => {
+    fetchHistory();
   }, []);
 
-  const updateSessionPath = useCallback((position: CartPosition, phase: 'mapping' | 'cutting') => {
-    setCurrentSession(prev => {
-      if (!prev) return null;
+  /**
+   * Carga el historial de sesiones.
+   */
+  const fetchHistory = async () => {
+    setLoading(true);
+    try {
+      const { data } = await axios.get<Session[]>(`${API_URL}/sessions`);
+      setSessionHistory(data);
+      setError(null);
+    } catch (err) {
+      setError('Error cargando historial de sesiones');
+    } finally {
+      setLoading(false);
+    }
+  };
 
-      if (phase === 'mapping') {
-        const updatedPath = [...prev.mappingPath, position];
-        const area = calculateArea(updatedPath);
+  /**
+   * Inicia una nueva sesión.
+   */
+  const startSession = async () => {
+    setLoading(true);
+    try {
+      const { data } = await axios.post<Session>(`${API_URL}/sessions`);
+      setCurrentSession(data);
+      setError(null);
+      fetchHistory();
+    } catch (err) {
+      setError('Error iniciando sesión');
+    } finally {
+      setLoading(false);
+    }
+  };
 
-        // Si ya tiene suficientes puntos, dejamos en "mapping_completed"
-        const status = updatedPath.length >= 50 ? 'mapping_completed' : 'mapping';
+  /**
+   * Actualiza el estado de una sesión.
+   */
+  const updateSessionStatus = async (id: string, status: Session['status']) => {
+    setLoading(true);
+    try {
+      const { data } = await axios.patch<Session>(`${API_URL}/sessions/${id}/status`, { status });
+      setCurrentSession(data);
+      setError(null);
+      fetchHistory();
+    } catch (err) {
+      setError('Error actualizando estado de la sesión');
+    } finally {
+      setLoading(false);
+    }
+  };
 
-        return {
-          ...prev,
-          mappingPath: updatedPath,
-          areaCovered: area,
-          status,
-        };
-      } else {
-        return {
-          ...prev,
-          cuttingPath: [...prev.cuttingPath, position],
-        };
-      }
-    });
-  }, []);
-
-  const addObstacle = useCallback((obstacle: ObstacleData) => {
-    setCurrentSession(prev => prev ? {
-      ...prev,
-      obstacles: [...prev.obstacles, obstacle],
-    } : null);
-  }, []);
-
-  const updateSensorData = useCallback((sensorData: SensorData) => {
-    setCurrentSession(prev => {
-      if (!prev) return null;
-
-      const newSensorData = [...prev.sensorData, sensorData];
-      const avgTemp = newSensorData.reduce((sum, d) => sum + d.temperature, 0) / newSensorData.length;
-      const avgHumidity = newSensorData.reduce((sum, d) => sum + d.humidity, 0) / newSensorData.length;
-
-      return {
-        ...prev,
-        sensorData: newSensorData,
-        averageTemperature: avgTemp,
-        averageHumidity: avgHumidity,
-        batteryUsed: Math.max(0, 100 - sensorData.batteryLevel),
-      };
-    });
-  }, []);
-
-  const transitionToCutting = useCallback(() => {
-    setCurrentSession(prev => prev ? {
-      ...prev,
-      status: 'cutting',
-    } : null);
-    console.log('Transición a fase de corte');
-  }, []);
-
-  const pauseSession = useCallback(() => {
-    setCurrentSession(prev => prev ? {
-      ...prev,
-      status: 'interrupted',
-    } : null);
-    console.log('Sesión pausada');
-  }, []);
-
-  const completeSession = useCallback(() => {
-    setCurrentSession(prev => {
-      if (!prev) return null;
-
-      const completed = {
-        ...prev,
-        endTime: Date.now(),
-        status: 'completed',
-      };
-
-      setSessionHistory(history => [completed, ...history]);
-      console.log('Sesión completada y guardada');
-      return null;
-    });
-  }, []);
-
-  const stopSession = useCallback(() => {
-    setCurrentSession(prev => {
-      if (!prev) return null;
-
-      const stopped = {
-        ...prev,
-        endTime: Date.now(),
-        status: 'interrupted',
-      };
-
-      setSessionHistory(history => [stopped, ...history]);
-      console.log('Sesión detenida y guardada');
-      return null;
-    });
-  }, []);
+  /**
+   * Detiene una sesión.
+   */
+  const stopSession = async (id: string) => {
+    setLoading(true);
+    try {
+      await axios.patch(`${API_URL}/sessions/${id}/stop`);
+      setCurrentSession(null);
+      setError(null);
+      fetchHistory();
+    } catch (err) {
+      setError('Error deteniendo la sesión');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return {
     currentSession,
     sessionHistory,
+    loading,
+    error,
     startSession,
-    updateSessionPath,
-    addObstacle,
-    updateSensorData,
-    transitionToCutting,
-    pauseSession,
-    completeSession,
+    updateSessionStatus,
     stopSession,
+    fetchHistory,
   };
-}
-
-function calculateArea(path: CartPosition[]): number {
-  if (path.length < 3) return 0;
-
-  let area = 0;
-  for (let i = 0; i < path.length; i++) {
-    const j = (i + 1) % path.length;
-    area += path[i].x * path[j].y;
-    area -= path[j].x * path[i].y;
-  }
-  return Math.abs(area) / 2;
 }

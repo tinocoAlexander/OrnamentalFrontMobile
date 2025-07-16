@@ -1,30 +1,28 @@
-// Se importa useEffect desde React para manejar efectos secundarios en el componente.
 import { useEffect } from 'react';
-
-// Se importan componentes y utilidades necesarias para el Dashboard.
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
-import { BrandHeader, StatusCard } from '@/components';
-import { TemperatureHumidityGauge } from '@/components/TemperatureHumidityGauge';
-import { BatteryIndicator } from '@/components/BatteryIndicator';
+import { BrandHeader, StatusCard, TemperatureHumidityGauge } from '@/components';
 
-// Se importan los hooks
+// Hooks
 import { useWiFiConnection, useSensorData, useWorkingSession } from '@/hooks';
 
-// Se importan iconos
+// Iconos
 import { Wifi, WifiOff } from 'lucide-react-native';
 
-// Constantes de css
+// Estilos y utilidades
 import { COLORS, TYPOGRAPHY, SPACING } from '@/constants/theme';
 
-// Se importan las funciones para los cálculos de estadísticas y todo eso
-import { formatDuration, getWorkingHours } from '@/utils/calculations';
-
-// Funcion principal
+/**
+ * Pantalla principal del Dashboard.
+ * Muestra el estado de conexión, tendencias de sensores y estado de la sesión actual.
+ */
 export default function DashboardScreen() {
-  const { connection, isConnecting, connectToCart } = useWiFiConnection(); // Hook para manejar la conexión Wi-Fi
-  const { currentData, sensorData, sensorHealth } = useSensorData(); // Hook para manejar los datos de los sensores
-  const { currentSession } = useWorkingSession(); // Hook para manejar la sesión de trabajo actual
+  const { connection, isConnecting, connectToCart } = useWiFiConnection(); // Conexión simulada al carrito
+  const { sensorData } = useSensorData(); // Datos reales de sensores (desde backend)
+  const { currentSession } = useWorkingSession(); // Sesión actual (desde backend)
 
+  /**
+   * Maneja la acción de conectar al carrito.
+   */
   const handleConnectToCart = () => {
     if (!connection.connected && !isConnecting) {
       connectToCart();
@@ -36,7 +34,8 @@ export default function DashboardScreen() {
       <BrandHeader />
       
       <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
-        {/* Primer componente de conexion al carrito */}
+        
+        {/* Estado de la conexión al carrito */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Estado de Conexión</Text>
           <TouchableOpacity onPress={handleConnectToCart} disabled={isConnecting}>
@@ -44,30 +43,31 @@ export default function DashboardScreen() {
               title="Conexión Wi-Fi"
               value={connection.connected ? 'Conectado' : isConnecting ? 'Conectando...' : 'Desconectado'}
               status={connection.connected ? 'healthy' : 'error'}
-              subtitle={connection.connected 
-                ? `${connection.ssid} • Signal: ${connection.signalStrength}%` 
-                : 'Toca para conectar a Carrito Inteligente'}
-              icon={connection.connected ? 
-                <Wifi size={20} color={COLORS.success} /> : 
-                <WifiOff size={20} color={COLORS.error} />
+              subtitle={
+                connection.connected 
+                  ? `${connection.ssid}` 
+                  : 'Toca para conectar al Carrito Inteligente'
+              }
+              icon={
+                connection.connected 
+                  ? <Wifi size={20} color={COLORS.success} /> 
+                  : <WifiOff size={20} color={COLORS.error} />
               }
             />
           </TouchableOpacity>
         </View>
 
-
-        {/* Graficas de sensores */}
+        {/* Gráficas de sensores */}
         {sensorData.length > 0 && (
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Tendencias de Datos de Sensores</Text>
 
-            {/* Componente para temperatura y humedad */}
+            {/* Temperatura y Humedad */}
             <TemperatureHumidityGauge data={sensorData} />
-
-            {/* Batería */}
-            <BatteryIndicator data={sensorData} />
           </View>
         )}
+
+        {/* Aquí podrías agregar más secciones, como estado de sesión, si lo deseas */}
 
       </ScrollView>
     </View>
@@ -91,8 +91,5 @@ const styles = StyleSheet.create({
     fontFamily: TYPOGRAPHY.primarySemiBold,
     color: COLORS.gray800,
     marginBottom: SPACING.md,
-  },
-  statusGrid: {
-    gap: SPACING.sm,
   },
 });
