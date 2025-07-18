@@ -43,7 +43,7 @@ export function useSessionPath(sessionId: string, phase: Phase) {
   const addPosition = useCallback(
     async (position: CartPosition) => {
       try {
-        await axios.post(
+        await axios.patch(
           `${API_URL}/sessions/${sessionId}/path`,
           { position, phase }
         );

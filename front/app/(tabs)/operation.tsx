@@ -1,13 +1,44 @@
 import { useEffect } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
+  TouchableOpacity,
+} from 'react-native';
+
+// Componentes
 import { BrandHeader } from '@/components/BrandHeader';
 import { LiveMap } from '@/components/LiveMap';
 import { ControlPanel } from '@/components/ControlPanel';
 import { StatCard } from '@/components/StatCard';
-import { useWiFiConnection, useSensorData, useWorkingSession, useNotifications } from '@/hooks';
+
+// Hooks personalizados
+import {
+  useWiFiConnection,
+  useSensorData,
+  useWorkingSession,
+  useNotifications,
+} from '@/hooks';
+
+// Iconos
 import { MapPin, Clock, CheckCircle } from 'lucide-react-native';
-import { COLORS, TYPOGRAPHY, SPACING, BORDER_RADIUS, SHADOWS } from '@/constants/theme';
-import { formatDuration, calculateSessionDuration, formatArea } from '@/utils/calculations';
+
+// Estilos
+import {
+  COLORS,
+  TYPOGRAPHY,
+  SPACING,
+  BORDER_RADIUS,
+  SHADOWS,
+} from '@/constants/theme';
+
+// Utilidades
+import {
+  formatDuration,
+  calculateSessionDuration,
+  formatArea,
+} from '@/utils/calculations';
 
 export default function OperationScreen() {
   const { connection } = useWiFiConnection();
@@ -19,10 +50,11 @@ export default function OperationScreen() {
     pauseSession,
     completeSession,
     stopSession,
-    updateSensorData
+    updateSensorData,
   } = useWorkingSession();
   const { addNotification } = useNotifications();
 
+  // Actualiza los datos de sensores en la sesión activa
   useEffect(() => {
     if (currentData && currentSession) {
       updateSensorData(currentData);
@@ -33,16 +65,18 @@ export default function OperationScreen() {
     ? calculateSessionDuration(currentSession.startTime)
     : 0;
 
-  const puedeIniciarCorte = currentSession?.status === 'mapping_completed';
+  const canStartCutting = currentSession?.status === 'mapping_completed';
 
   return (
     <View style={styles.container}>
       <BrandHeader />
 
-      <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
-
-        {/* Panel de control */}
-        {!puedeIniciarCorte && (
+      <ScrollView
+        style={styles.scrollView}
+        showsVerticalScrollIndicator={false}
+      >
+        {/* Panel de control (mientras no haya finalizado mapeo) */}
+        {!canStartCutting && (
           <View style={styles.section}>
             <ControlPanel
               status={currentSession?.status || 'idle'}
@@ -55,12 +89,12 @@ export default function OperationScreen() {
           </View>
         )}
 
-        {/* Si mapeo terminado, muestra botón para iniciar corte */}
-        {puedeIniciarCorte && (
+        {/* Botón para iniciar corte una vez finalizado el mapeo */}
+        {canStartCutting && (
           <View style={styles.section}>
             <View style={styles.corteContainer}>
               <Text style={styles.corteText}>
-                ✅ El mapeo ha finalizado correctamente. Revisa el área mapeada y presiona para comenzar el corte.
+                ✅ El mapeo ha finalizado. Revisa el área y presiona para comenzar el corte.
               </Text>
               <TouchableOpacity
                 style={styles.botonCorte}
@@ -102,7 +136,7 @@ export default function OperationScreen() {
           </View>
         </View>
 
-        {/* Checklist de requisitos */}
+        {/* Checklist si no hay sesión activa */}
         {!currentSession && (
           <View style={styles.section}>
             <View style={styles.checklistCard}>
@@ -111,12 +145,20 @@ export default function OperationScreen() {
               <View style={styles.checklistItem}>
                 <CheckCircle
                   size={20}
-                  color={connection.connected ? COLORS.success : COLORS.gray400}
+                  color={
+                    connection.connected ? COLORS.success : COLORS.gray400
+                  }
                 />
-                <Text style={[
-                  styles.checklistText,
-                  { color: connection.connected ? COLORS.success : COLORS.gray400 }
-                ]}>
+                <Text
+                  style={[
+                    styles.checklistText,
+                    {
+                      color: connection.connected
+                        ? COLORS.success
+                        : COLORS.gray400,
+                    },
+                  ]}
+                >
                   Conexión Wi-Fi establecida
                 </Text>
               </View>
@@ -126,10 +168,16 @@ export default function OperationScreen() {
                   size={20}
                   color={currentData ? COLORS.success : COLORS.gray400}
                 />
-                <Text style={[
-                  styles.checklistText,
-                  { color: currentData ? COLORS.success : COLORS.gray400 }
-                ]}>
+                <Text
+                  style={[
+                    styles.checklistText,
+                    {
+                      color: currentData
+                        ? COLORS.success
+                        : COLORS.gray400,
+                    },
+                  ]}
+                >
                   Datos de sensores disponibles
                 </Text>
               </View>
@@ -137,24 +185,35 @@ export default function OperationScreen() {
               <View style={styles.checklistItem}>
                 <CheckCircle
                   size={20}
-                  color={currentData && currentData.batteryLevel >= 15 ? COLORS.success : COLORS.gray400}
+                  color={
+                    currentData && currentData.batteryLevel >= 15
+                      ? COLORS.success
+                      : COLORS.gray400
+                  }
                 />
-                <Text style={[
-                  styles.checklistText,
-                  { color: currentData && currentData.batteryLevel >= 15 ? COLORS.success : COLORS.gray400 }
-                ]}>
-                  Nivel de batería suficiente (≥15%)
+                <Text
+                  style={[
+                    styles.checklistText,
+                    {
+                      color:
+                        currentData && currentData.batteryLevel >= 15
+                          ? COLORS.success
+                          : COLORS.gray400,
+                    },
+                  ]}
+                >
+                  Batería suficiente (≥15%)
                 </Text>
               </View>
             </View>
           </View>
         )}
-
       </ScrollView>
     </View>
   );
 }
 
+// 🎨 Estilos
 const styles = StyleSheet.create({
   container: {
     flex: 1,
