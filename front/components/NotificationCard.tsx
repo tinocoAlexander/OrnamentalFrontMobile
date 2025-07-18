@@ -1,11 +1,17 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
-import { X, TriangleAlert as AlertTriangle, Battery, Wrench, CircleCheck as CheckCircle, Wifi } from 'lucide-react-native';
-import { NotificationData } from '@/types';
+import {
+  X,
+  TriangleAlert as AlertTriangle,
+  Wrench,
+  CircleCheck as CheckCircle,
+  Wifi
+} from 'lucide-react-native';
+import { Notification } from '@/types';
 import { COLORS, TYPOGRAPHY, SPACING, BORDER_RADIUS, SHADOWS } from '@/constants/theme';
 
 interface NotificationCardProps {
-  notification: NotificationData;
+  notification: Notification;
   onDismiss: (id: string) => void;
 }
 
@@ -13,7 +19,6 @@ export function NotificationCard({ notification, onDismiss }: NotificationCardPr
   const getIcon = () => {
     switch (notification.type) {
       case 'obstacle': return <AlertTriangle size={20} color={getIconColor()} />;
-      case 'low_battery': return <Battery size={20} color={getIconColor()} />;
       case 'maintenance': return <Wrench size={20} color={getIconColor()} />;
       case 'session_complete': return <CheckCircle size={20} color={getIconColor()} />;
       case 'connection': return <Wifi size={20} color={getIconColor()} />;
@@ -53,11 +58,11 @@ export function NotificationCard({ notification, onDismiss }: NotificationCardPr
     const notificationTime = new Date(timestamp);
     const diffInMinutes = Math.floor((now.getTime() - notificationTime.getTime()) / (1000 * 60));
     
-    if (diffInMinutes < 1) return 'Just now';
-    if (diffInMinutes < 60) return `${diffInMinutes}m ago`;
+    if (diffInMinutes < 1) return 'Justo ahora';
+    if (diffInMinutes < 60) return `${diffInMinutes}m atrás`;
     
     const diffInHours = Math.floor(diffInMinutes / 60);
-    if (diffInHours < 24) return `${diffInHours}h ago`;
+    if (diffInHours < 24) return `${diffInHours}h atrás`;
     
     return notificationTime.toLocaleDateString();
   };
@@ -80,7 +85,7 @@ export function NotificationCard({ notification, onDismiss }: NotificationCardPr
         </View>
         <TouchableOpacity
           style={styles.dismissButton}
-          onPress={() => onDismiss(notification.id)}
+          onPress={() => onDismiss(notification._id)}
         >
           <X size={18} color={COLORS.gray500} />
         </TouchableOpacity>

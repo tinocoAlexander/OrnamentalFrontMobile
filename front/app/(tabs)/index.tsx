@@ -32,9 +32,9 @@ export default function DashboardScreen() {
   return (
     <View style={styles.container}>
       <BrandHeader />
-      
+
       <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
-        
+
         {/* Estado de la conexión al carrito */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Estado de Conexión</Text>
@@ -44,13 +44,13 @@ export default function DashboardScreen() {
               value={connection.connected ? 'Conectado' : isConnecting ? 'Conectando...' : 'Desconectado'}
               status={connection.connected ? 'healthy' : 'error'}
               subtitle={
-                connection.connected 
-                  ? `${connection.ssid}` 
+                connection.connected
+                  ? `${connection.ssid}`
                   : 'Toca para conectar al Carrito Inteligente'
               }
               icon={
-                connection.connected 
-                  ? <Wifi size={20} color={COLORS.success} /> 
+                connection.connected
+                  ? <Wifi size={20} color={COLORS.success} />
                   : <WifiOff size={20} color={COLORS.error} />
               }
             />
@@ -58,14 +58,17 @@ export default function DashboardScreen() {
         </View>
 
         {/* Gráficas de sensores */}
-        {sensorData.length > 0 && (
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Tendencias de Datos de Sensores</Text>
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Tendencias de Datos de Sensores</Text>
 
-            {/* Temperatura y Humedad */}
+          {sensorData.length > 0 ? (
             <TemperatureHumidityGauge data={sensorData} />
-          </View>
-        )}
+          ) : (
+            <Text style={styles.noDataText}>
+              Sin datos de sensores aún. Esperando lecturas…
+            </Text>
+          )}
+        </View>
 
         {/* Aquí podrías agregar más secciones, como estado de sesión, si lo deseas */}
 
@@ -91,5 +94,10 @@ const styles = StyleSheet.create({
     fontFamily: TYPOGRAPHY.primarySemiBold,
     color: COLORS.gray800,
     marginBottom: SPACING.md,
+  },
+  noDataText: {
+    textAlign: 'center',
+    color: COLORS.gray400,
+    fontSize: TYPOGRAPHY.base,
   },
 });

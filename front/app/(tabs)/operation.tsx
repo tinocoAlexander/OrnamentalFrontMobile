@@ -13,59 +13,53 @@ import { LiveMap } from '@/components/LiveMap';
 import { ControlPanel } from '@/components/ControlPanel';
 import { StatCard } from '@/components/StatCard';
 
-// Hooks personalizados
+// Hooks
 import {
   useWiFiConnection,
   useSensorData,
   useWorkingSession,
-  useNotifications,
 } from '@/hooks';
 
-// Iconos
 import { MapPin, Clock, CheckCircle } from 'lucide-react-native';
 
-// Estilos
-import {
-  COLORS,
-  TYPOGRAPHY,
-  SPACING,
-  BORDER_RADIUS,
-  SHADOWS,
-} from '@/constants/theme';
+import { COLORS, TYPOGRAPHY, SPACING } from '@/constants/theme';
 
-// Utilidades
-import {
-  formatDuration,
-  calculateSessionDuration,
-  formatArea,
-} from '@/utils/calculations';
-
+/**
+ * Pantalla para gestionar la operación del carrito.
+ * - Controla la sesión (iniciar, pausar, detener).
+ * - Muestra el mapa y estadísticas.
+ * - Toda la lógica de cálculo y procesamiento pesado está en el backend.
+ */
 export default function OperationScreen() {
   const { connection } = useWiFiConnection();
-  const { currentData } = useSensorData();
+
+  const { sensorData } = useSensorData(); // lecturas periódicas del backend
+  const latestSensorData = sensorData[sensorData.length - 1] || null;
+
   const {
     currentSession,
     startSession,
-    transitionToCutting,
-    pauseSession,
-    completeSession,
+    updateSessionStatus,
     stopSession,
-    updateSensorData,
   } = useWorkingSession();
-  const { addNotification } = useNotifications();
 
-  // Actualiza los datos de sensores en la sesión activa
+  /**
+   * Mapeamos `interrupted` a `idle` para que no rompa el ControlPanel.
+   */
+  const mappedStatus =
+    currentSession?.status === 'interrupted'
+      ? 'idle'
+      : (currentSession?.status || 'idle');
+
+  /**
+   * Determina si ya puede iniciar el corte (después del mapeo).
+   */
+  const canStartCutting = currentSession?.status === 'completed';
+
   useEffect(() => {
-    if (currentData && currentSession) {
-      updateSensorData(currentData);
-    }
-  }, [currentData, currentSession, updateSensorData]);
-
-  const currentDuration = currentSession
-    ? calculateSessionDuration(currentSession.startTime)
-    : 0;
-
-  const canStartCutting = currentSession?.status === 'mapping_completed';
+    // Aquí podrías enviar `latestSensorData` al backend si fuera necesario.
+    // Actualmente se gestiona en el backend.
+  }, [latestSensorData, currentSession]);
 
   return (
     <View style={styles.container}>
@@ -75,30 +69,40 @@ export default function OperationScreen() {
         style={styles.scrollView}
         showsVerticalScrollIndicator={false}
       >
-        {/* Panel de control (mientras no haya finalizado mapeo) */}
-        {!canStartCutting && (
-          <View style={styles.section}>
-            <ControlPanel
-              status={currentSession?.status || 'idle'}
-              onStart={startSession}
-              onPause={pauseSession}
-              onStop={stopSession}
-              onReset={completeSession}
-              disabled={false}
-            />
-          </View>
-        )}
 
-        {/* Botón para iniciar corte una vez finalizado el mapeo */}
+        {/* Panel de control para la sesión */}
+        <View style={styles.section}>
+          <ControlPanel
+            status={mappedStatus}
+            onStart={startSession}
+            onPause={() => {
+              if (currentSession?._id) {
+                updateSessionStatus(currentSession._id, 'completed');
+              }
+            }}
+            onStop={() => {
+              if (currentSession?._id) {
+                stopSession(currentSession._id);
+              }
+            }}
+            disabled={false}
+          />
+        </View>
+
+        {/* Botón para iniciar corte (solo después del mapeo) */}
         {canStartCutting && (
           <View style={styles.section}>
             <View style={styles.corteContainer}>
               <Text style={styles.corteText}>
-                ✅ El mapeo ha finalizado. Revisa el área y presiona para comenzar el corte.
+                ✅ El mapeo ha finalizado. Presiona para comenzar el corte.
               </Text>
               <TouchableOpacity
                 style={styles.botonCorte}
-                onPress={transitionToCutting}
+                onPress={() => {
+                  if (currentSession?._id) {
+                    updateSessionStatus(currentSession._id, 'cutting');
+                  }
+                }}
               >
                 <Text style={styles.botonCorteTexto}>Iniciar corte</Text>
               </TouchableOpacity>
@@ -111,43 +115,53 @@ export default function OperationScreen() {
           <LiveMap
             mappingPath={currentSession?.mappingPath || []}
             cuttingPath={currentSession?.cuttingPath || []}
-            currentPosition={null}
+            currentPosition={null} // puedes poner aquí si tienes una coordenada actual
             obstacles={currentSession?.obstacles || []}
-            phase={currentSession?.status || 'idle'}
+            phase={
+              currentSession?.status === 'mapping' ||
+              currentSession?.status === 'cutting' ||
+              currentSession?.status === 'completed'
+                ? currentSession.status
+                : 'mapping'
+            }
           />
         </View>
 
-        {/* Estadísticas de la sesión */}
+        {/* Estadísticas básicas de la sesión */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Estadísticas de la sesión</Text>
+          <Text style={styles.sectionTitle}>Estadísticas</Text>
           <View style={styles.statsRow}>
             <StatCard
-              label="Área mapeada"
-              value={formatArea(currentSession?.areaCovered || 0)}
+              label="Área"
+              value={`${currentSession?.areaCovered ?? 0} m²`}
               icon={<MapPin size={24} color={COLORS.success} />}
               color={COLORS.success}
             />
             <StatCard
-              label="Duración"
-              value={formatDuration(currentDuration)}
+              label="Temp. Prom."
+              value={`${currentSession?.averageTemperature ?? 0} °C`}
+              icon={<Clock size={24} color={COLORS.info} />}
+              color={COLORS.info}
+            />
+            <StatCard
+              label="Humedad Prom."
+              value={`${currentSession?.averageHumidity ?? 0} %`}
               icon={<Clock size={24} color={COLORS.info} />}
               color={COLORS.info}
             />
           </View>
         </View>
 
-        {/* Checklist si no hay sesión activa */}
+        {/* Checklist inicial si no hay sesión activa */}
         {!currentSession && (
           <View style={styles.section}>
             <View style={styles.checklistCard}>
-              <Text style={styles.checklistTitle}>Requisitos previos</Text>
+              <Text style={styles.checklistTitle}>Requisitos</Text>
 
               <View style={styles.checklistItem}>
                 <CheckCircle
                   size={20}
-                  color={
-                    connection.connected ? COLORS.success : COLORS.gray400
-                  }
+                  color={connection.connected ? COLORS.success : COLORS.gray400}
                 />
                 <Text
                   style={[
@@ -159,50 +173,26 @@ export default function OperationScreen() {
                     },
                   ]}
                 >
-                  Conexión Wi-Fi establecida
+                  Wi-Fi conectado
                 </Text>
               </View>
 
               <View style={styles.checklistItem}>
                 <CheckCircle
                   size={20}
-                  color={currentData ? COLORS.success : COLORS.gray400}
+                  color={latestSensorData ? COLORS.success : COLORS.gray400}
                 />
                 <Text
                   style={[
                     styles.checklistText,
                     {
-                      color: currentData
+                      color: latestSensorData
                         ? COLORS.success
                         : COLORS.gray400,
                     },
                   ]}
                 >
-                  Datos de sensores disponibles
-                </Text>
-              </View>
-
-              <View style={styles.checklistItem}>
-                <CheckCircle
-                  size={20}
-                  color={
-                    currentData && currentData.batteryLevel >= 15
-                      ? COLORS.success
-                      : COLORS.gray400
-                  }
-                />
-                <Text
-                  style={[
-                    styles.checklistText,
-                    {
-                      color:
-                        currentData && currentData.batteryLevel >= 15
-                          ? COLORS.success
-                          : COLORS.gray400,
-                    },
-                  ]}
-                >
-                  Batería suficiente (≥15%)
+                  Datos de sensores recibidos
                 </Text>
               </View>
             </View>
@@ -235,8 +225,8 @@ const styles = StyleSheet.create({
   statsRow: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    justifyContent: 'space-between',
     gap: SPACING.md,
+    justifyContent: 'space-between',
   },
   checklistCard: {
     backgroundColor: COLORS.info + '10',
@@ -266,8 +256,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     padding: SPACING.md,
     backgroundColor: COLORS.surface,
-    borderRadius: BORDER_RADIUS.lg,
-    ...SHADOWS.md,
+    borderRadius: 12,
   },
   corteText: {
     fontSize: TYPOGRAPHY.base,
@@ -279,7 +268,7 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.success,
     paddingVertical: SPACING.md,
     paddingHorizontal: SPACING.lg,
-    borderRadius: BORDER_RADIUS.lg,
+    borderRadius: 12,
   },
   botonCorteTexto: {
     color: COLORS.white,

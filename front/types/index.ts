@@ -1,3 +1,5 @@
+import { Key } from "react";
+
 /**
  * Posición del carrito en el mapa
  */
@@ -48,8 +50,9 @@ export interface Session {
  * Notificación en la app
  */
 export interface Notification {
+  _id: Key | null | undefined;
   id: string;
-  type: 'obstacle' | 'session_complete' | 'error' | 'connection';
+  type: 'obstacle' | 'session_complete' | 'error' | 'connection' | 'maintenance';
   title: string;
   message: string;
   timestamp: number;
@@ -73,4 +76,4 @@ export interface SystemDiagnostics {
   appVersion: string;
   lastSync: string; // ISO date string
   totalWorkingHours: number;
-}
+_: any}

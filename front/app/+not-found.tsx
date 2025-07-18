@@ -43,7 +43,7 @@ const styles = StyleSheet.create({
     resizeMode: 'contain',
   },
   title: {
-    fontSize: TYPOGRAPHY['5xl'],
+    fontSize: TYPOGRAPHY['4xl'],
     fontFamily: TYPOGRAPHY.primaryBold,
     color: COLORS.primary,
   },

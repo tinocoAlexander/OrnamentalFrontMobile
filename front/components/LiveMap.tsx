@@ -1,19 +1,23 @@
 import React from 'react';
 import { View, Text, StyleSheet, Dimensions } from 'react-native';
-import { CartPosition, ObstacleData } from '@/types';
+import { CartPosition, Obstacle } from '@/types';
 import { COLORS, TYPOGRAPHY, SPACING, BORDER_RADIUS, SHADOWS } from '@/constants/theme';
 
 interface LiveMapProps {
   mappingPath: CartPosition[];
   cuttingPath: CartPosition[];
   currentPosition: CartPosition | null;
-  obstacles: ObstacleData[];
+  obstacles: Obstacle[];
   phase: 'mapping' | 'cutting' | 'completed';
 }
 
 const { width: screenWidth } = Dimensions.get('window');
 const MAP_SIZE = screenWidth - SPACING.md * 2;
 
+/**
+ * Componente para mostrar un resumen visual del mapa en vivo.
+ * No renderiza un mapa real, solo estadísticas y placeholders.
+ */
 export function LiveMap({
   mappingPath,
   cuttingPath,
@@ -21,17 +25,6 @@ export function LiveMap({
   obstacles,
   phase,
 }: LiveMapProps) {
-  const calcularArea = (path: CartPosition[]): number => {
-    if (path.length < 3) return 0;
-    let area = 0;
-    for (let i = 0; i < path.length; i++) {
-      const j = (i + 1) % path.length;
-      area += path[i].x * path[j].y;
-      area -= path[j].x * path[i].y;
-    }
-    return Math.abs(area) / 2;
-  };
-
   const colorFase = () => {
     switch (phase) {
       case 'mapping': return COLORS.info;
@@ -61,24 +54,19 @@ export function LiveMap({
 
       <View style={styles.mapContainer}>
         <View style={styles.mapArea}>
-          {/* Aquí iría el mapa real (ej: react-native-svg) */}
+          {/* Placeholder para mapa */}
           <View style={styles.mapPlaceholder}>
-            <Text style={styles.mapText}>Visualización del mapa en tiempo real</Text>
+            <Text style={styles.mapText}>Visualización del mapa</Text>
 
             <View style={styles.statsContainer}>
               <View style={styles.statItem}>
-                <Text style={styles.statLabel}>Puntos del mapeo:</Text>
+                <Text style={styles.statLabel}>Puntos mapeo:</Text>
                 <Text style={styles.statValue}>{mappingPath.length}</Text>
               </View>
 
               <View style={styles.statItem}>
-                <Text style={styles.statLabel}>Progreso del corte:</Text>
+                <Text style={styles.statLabel}>Puntos corte:</Text>
                 <Text style={styles.statValue}>{cuttingPath.length}</Text>
-              </View>
-
-              <View style={styles.statItem}>
-                <Text style={styles.statLabel}>Área mapeada:</Text>
-                <Text style={styles.statValue}>{calcularArea(mappingPath).toFixed(1)} m²</Text>
               </View>
 
               <View style={styles.statItem}>
@@ -88,15 +76,17 @@ export function LiveMap({
             </View>
           </View>
 
+          {/* Posición actual */}
           {currentPosition && (
             <View style={styles.currentPosition}>
               <View style={styles.positionDot} />
               <Text style={styles.positionText}>
-                Actual: ({currentPosition.x.toFixed(1)}, {currentPosition.y.toFixed(1)})
+                ({currentPosition.x.toFixed(1)}, {currentPosition.y.toFixed(1)})
               </Text>
             </View>
           )}
 
+          {/* Obstáculos */}
           {obstacles.length > 0 && (
             <View style={styles.obstaclesIndicator}>
               <Text style={styles.obstaclesText}>⚠️ {obstacles.length} obstáculos</Text>

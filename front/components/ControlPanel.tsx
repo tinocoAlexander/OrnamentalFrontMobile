@@ -12,6 +12,9 @@ interface ControlPanelProps {
   disabled?: boolean;
 }
 
+/**
+ * Panel de control con botones para iniciar, pausar, detener o reiniciar la sesión.
+ */
 export function ControlPanel({
   status,
   onStart,

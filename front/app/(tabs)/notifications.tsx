@@ -1,9 +1,8 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 
 // Componentes internos
-import { BrandHeader } from '@/components/BrandHeader';
-import { NotificationCard } from '@/components/NotificationCard';
+import { BrandHeader, NotificationCard} from '@/components';
 
 // Hook para manejar notificaciones desde el backend
 import { useNotifications } from '@/hooks/useNotifications';
@@ -79,7 +78,7 @@ export default function NotificationsScreen() {
             <View style={styles.notificationsList}>
               {notifications.map((notification) => (
                 <NotificationCard
-                  key={notification.id}
+                  key={notification._id}
                   notification={notification}
                   onDismiss={dismissNotification}
                 />

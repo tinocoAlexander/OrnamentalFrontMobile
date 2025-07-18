@@ -1,3 +1,4 @@
+// Importaciones
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Session } from '@/types';
@@ -19,9 +20,6 @@ export function useWorkingSession() {
     fetchHistory();
   }, []);
 
-  /**
-   * Carga el historial de sesiones.
-   */
   const fetchHistory = async () => {
     setLoading(true);
     try {
@@ -35,13 +33,10 @@ export function useWorkingSession() {
     }
   };
 
-  /**
-   * Inicia una nueva sesión.
-   */
   const startSession = async () => {
     setLoading(true);
     try {
-      const { data } = await axios.post<Session>(`${API_URL}/sessions`);
+      const { data } = await axios.post<Session>(`${API_URL}/sessions/start`);
       setCurrentSession(data);
       setError(null);
       fetchHistory();
@@ -52,9 +47,6 @@ export function useWorkingSession() {
     }
   };
 
-  /**
-   * Actualiza el estado de una sesión.
-   */
   const updateSessionStatus = async (id: string, status: Session['status']) => {
     setLoading(true);
     try {
@@ -69,13 +61,12 @@ export function useWorkingSession() {
     }
   };
 
-  /**
-   * Detiene una sesión.
-   */
   const stopSession = async (id: string) => {
     setLoading(true);
     try {
-      await axios.patch(`${API_URL}/sessions/${id}/stop`);
+      const { data } = await axios.patch<Session>(`${API_URL}/sessions/${id}/status`, {
+        status: 'interrupted',
+      });
       setCurrentSession(null);
       setError(null);
       fetchHistory();
