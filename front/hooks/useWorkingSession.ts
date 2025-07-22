@@ -34,18 +34,18 @@ export function useWorkingSession() {
   };
 
   const startSession = async () => {
-    setLoading(true);
-    try {
-      const { data } = await axios.post<Session>(`${API_URL}/sessions/start`);
-      setCurrentSession(data);
-      setError(null);
-      fetchHistory();
-    } catch (err) {
-      setError('Error iniciando sesión');
-    } finally {
-      setLoading(false);
-    }
-  };
+  setLoading(true);
+  try {
+    const { data } = await axios.get<{ success: boolean; data: Session }>(`${API_URL}/sessions/latest`);
+    setCurrentSession(data.data); // aquí accedes a data.data porque tu backend devuelve { success, data }
+    setError(null);
+    fetchHistory();
+  } catch (err) {
+    setError('Error iniciando sesión');
+  } finally {
+    setLoading(false);
+  }
+};
 
   const updateSessionStatus = async (id: string, status: Session['status']) => {
     setLoading(true);

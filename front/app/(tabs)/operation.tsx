@@ -75,16 +75,8 @@ export default function OperationScreen() {
           <ControlPanel
             status={mappedStatus}
             onStart={startSession}
-            onPause={() => {
-              if (currentSession?._id) {
-                updateSessionStatus(currentSession._id, 'completed');
-              }
-            }}
-            onStop={() => {
-              if (currentSession?._id) {
-                stopSession(currentSession._id);
-              }
-            }}
+            onPause={() => {}}
+            onStop={() => {}}
             disabled={false}
           />
         </View>

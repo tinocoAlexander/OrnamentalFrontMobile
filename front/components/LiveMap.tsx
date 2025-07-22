@@ -54,44 +54,20 @@ export function LiveMap({
 
       <View style={styles.mapContainer}>
         <View style={styles.mapArea}>
-          {/* Placeholder para mapa */}
-          <View style={styles.mapPlaceholder}>
-            <Text style={styles.mapText}>Visualización del mapa</Text>
-
-            <View style={styles.statsContainer}>
-              <View style={styles.statItem}>
-                <Text style={styles.statLabel}>Puntos mapeo:</Text>
-                <Text style={styles.statValue}>{mappingPath.length}</Text>
-              </View>
-
-              <View style={styles.statItem}>
-                <Text style={styles.statLabel}>Puntos corte:</Text>
-                <Text style={styles.statValue}>{cuttingPath.length}</Text>
-              </View>
-
-              <View style={styles.statItem}>
-                <Text style={styles.statLabel}>Obstáculos:</Text>
-                <Text style={styles.statValue}>{obstacles.length}</Text>
-              </View>
-            </View>
-          </View>
-
-          {/* Posición actual */}
-          {currentPosition && (
-            <View style={styles.currentPosition}>
-              <View style={styles.positionDot} />
-              <Text style={styles.positionText}>
-                ({currentPosition.x.toFixed(1)}, {currentPosition.y.toFixed(1)})
-              </Text>
-            </View>
-          )}
-
-          {/* Obstáculos */}
-          {obstacles.length > 0 && (
-            <View style={styles.obstaclesIndicator}>
-              <Text style={styles.obstaclesText}>⚠️ {obstacles.length} obstáculos</Text>
-            </View>
-          )}
+          {mappingPath.map((point, index) => (
+            <View
+              key={index}
+              style={{
+                position: 'absolute',
+                left: point.x, // aplica escala si necesario
+                top: point.y,
+                width: 4,
+                height: 4,
+                backgroundColor: 'blue',
+                borderRadius: 2,
+              }}
+            />
+          ))}
         </View>
       </View>
     </View>
