@@ -23,8 +23,8 @@ export function useWorkingSession() {
   const fetchHistory = async () => {
     setLoading(true);
     try {
-      const { data } = await axios.get<Session[]>(`${API_URL}/sessions`);
-      setSessionHistory(data);
+      const { data } = await axios.get<{ success: boolean; data: Session[] }>(`${API_URL}/sessions`);
+      setSessionHistory(data.data); // 👈 aquí accedes al array
       setError(null);
     } catch (err) {
       setError('Error cargando historial de sesiones');

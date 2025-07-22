@@ -19,8 +19,8 @@ export function useSensorData() {
   const fetchSensorData = async () => {
     setLoading(true);
     try {
-      const { data } = await axios.get<SensorData[]>(`${API_URL}/api/sensors/latest`);
-      setSensorData(data);
+      const { data } = await axios.get<{ success: boolean, data: SensorData[] }>(`${API_URL}/api/sensors/latest`);
+      setSensorData(data.data);
       setError(null);
     } catch (err) {
       setError('Error fetching sensor data');
