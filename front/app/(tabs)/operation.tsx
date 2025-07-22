@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -7,13 +7,11 @@ import {
   TouchableOpacity,
 } from 'react-native';
 
-// Componentes
 import { BrandHeader } from '@/components/BrandHeader';
 import { LiveMap } from '@/components/LiveMap';
 import { ControlPanel } from '@/components/ControlPanel';
 import { StatCard } from '@/components/StatCard';
 
-// Hooks
 import {
   useWiFiConnection,
   useSensorData,
@@ -24,42 +22,34 @@ import { MapPin, Clock, CheckCircle } from 'lucide-react-native';
 
 import { COLORS, TYPOGRAPHY, SPACING } from '@/constants/theme';
 
-/**
- * Pantalla para gestionar la operación del carrito.
- * - Controla la sesión (iniciar, pausar, detener).
- * - Muestra el mapa y estadísticas.
- * - Toda la lógica de cálculo y procesamiento pesado está en el backend.
- */
 export default function OperationScreen() {
   const { connection } = useWiFiConnection();
-
-  const { sensorData } = useSensorData(); // lecturas periódicas del backend
+  const { sensorData } = useSensorData();
   const latestSensorData = sensorData[sensorData.length - 1] || null;
 
   const {
     currentSession,
     startSession,
     updateSessionStatus,
-    stopSession,
   } = useWorkingSession();
 
-  /**
-   * Mapeamos `interrupted` a `idle` para que no rompa el ControlPanel.
-   */
-  const mappedStatus =
-    currentSession?.status === 'interrupted'
-      ? 'idle'
-      : (currentSession?.status || 'idle');
-
-  /**
-   * Determina si ya puede iniciar el corte (después del mapeo).
-   */
-  const canStartCutting = currentSession?.status === 'completed';
+  // Local state para limpiar sin tocar el backend
+  const [localSession, setLocalSession] = useState(currentSession);
 
   useEffect(() => {
-    // Aquí podrías enviar `latestSensorData` al backend si fuera necesario.
-    // Actualmente se gestiona en el backend.
-  }, [latestSensorData, currentSession]);
+    setLocalSession(currentSession);
+  }, [currentSession]);
+
+  const mappedStatus =
+    localSession?.status === 'interrupted'
+      ? 'idle'
+      : (localSession?.status || 'idle');
+
+  const canStartCutting = localSession?.status === 'completed';
+
+  const handleStopFrontend = () => {
+    setLocalSession(null);
+  };
 
   return (
     <View style={styles.container}>
@@ -69,19 +59,14 @@ export default function OperationScreen() {
         style={styles.scrollView}
         showsVerticalScrollIndicator={false}
       >
-
-        {/* Panel de control para la sesión */}
         <View style={styles.section}>
           <ControlPanel
             status={mappedStatus}
             onStart={startSession}
-            onPause={() => {}}
-            onStop={() => {}}
-            disabled={false}
+            onStop={handleStopFrontend}
           />
         </View>
 
-        {/* Botón para iniciar corte (solo después del mapeo) */}
         {canStartCutting && (
           <View style={styles.section}>
             <View style={styles.corteContainer}>
@@ -91,8 +76,8 @@ export default function OperationScreen() {
               <TouchableOpacity
                 style={styles.botonCorte}
                 onPress={() => {
-                  if (currentSession?._id) {
-                    updateSessionStatus(currentSession._id, 'cutting');
+                  if (localSession?._id) {
+                    updateSessionStatus(localSession._id, 'cutting');
                   }
                 }}
               >
@@ -102,50 +87,47 @@ export default function OperationScreen() {
           </View>
         )}
 
-        {/* Mapa en vivo */}
         <View style={styles.section}>
           <LiveMap
-            mappingPath={currentSession?.mappingPath || []}
-            cuttingPath={currentSession?.cuttingPath || []}
-            currentPosition={null} // puedes poner aquí si tienes una coordenada actual
-            obstacles={currentSession?.obstacles || []}
+            mappingPath={localSession?.mappingPath || []}
+            cuttingPath={localSession?.cuttingPath || []}
+            currentPosition={null}
+            obstacles={localSession?.obstacles || []}
             phase={
-              currentSession?.status === 'mapping' ||
-              currentSession?.status === 'cutting' ||
-              currentSession?.status === 'completed'
-                ? currentSession.status
+              localSession?.status === 'mapping' ||
+              localSession?.status === 'cutting' ||
+              localSession?.status === 'completed'
+                ? localSession.status
                 : 'mapping'
             }
           />
         </View>
 
-        {/* Estadísticas básicas de la sesión */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Estadísticas</Text>
           <View style={styles.statsRow}>
             <StatCard
               label="Área"
-              value={`${currentSession?.areaCovered ?? 0} m²`}
+              value={`${localSession?.areaCovered ?? 0} m²`}
               icon={<MapPin size={24} color={COLORS.success} />}
               color={COLORS.success}
             />
             <StatCard
               label="Temp. Prom."
-              value={`${currentSession?.averageTemperature ?? 0} °C`}
+              value={`${localSession?.averageTemperature ?? 0} °C`}
               icon={<Clock size={24} color={COLORS.info} />}
               color={COLORS.info}
             />
             <StatCard
               label="Humedad Prom."
-              value={`${currentSession?.averageHumidity ?? 0} %`}
+              value={`${localSession?.averageHumidity ?? 0} %`}
               icon={<Clock size={24} color={COLORS.info} />}
               color={COLORS.info}
             />
           </View>
         </View>
 
-        {/* Checklist inicial si no hay sesión activa */}
-        {!currentSession && (
+        {!localSession && (
           <View style={styles.section}>
             <View style={styles.checklistCard}>
               <Text style={styles.checklistTitle}>Requisitos</Text>
@@ -183,7 +165,6 @@ export default function OperationScreen() {
   );
 }
 
-// 🎨 Estilos
 const styles = StyleSheet.create({
   container: {
     flex: 1,

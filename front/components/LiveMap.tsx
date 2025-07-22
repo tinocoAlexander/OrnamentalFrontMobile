@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet, Dimensions } from 'react-native';
+import Svg, { Polygon, Circle } from 'react-native-svg';
 import { CartPosition, Obstacle } from '@/types';
 import { COLORS, TYPOGRAPHY, SPACING, BORDER_RADIUS, SHADOWS } from '@/constants/theme';
 
@@ -14,10 +15,6 @@ interface LiveMapProps {
 const { width: screenWidth } = Dimensions.get('window');
 const MAP_SIZE = screenWidth - SPACING.md * 2;
 
-/**
- * Componente para mostrar un resumen visual del mapa en vivo.
- * No renderiza un mapa real, solo estadísticas y placeholders.
- */
 export function LiveMap({
   mappingPath,
   cuttingPath,
@@ -43,6 +40,26 @@ export function LiveMap({
     }
   };
 
+  const allPoints = mappingPath.length > 0 ? mappingPath : [{ x: 0, y: 0 }];
+  const xs = allPoints.map(p => p.x);
+  const ys = allPoints.map(p => p.y);
+
+  const minX = Math.min(...xs);
+  const maxX = Math.max(...xs);
+  const minY = Math.min(...ys);
+  const maxY = Math.max(...ys);
+
+  const scaleX = (x: number) =>
+    ((x - minX) / Math.max(maxX - minX, 1)) * (MAP_SIZE - 10);
+
+  const scaleY = (y: number) =>
+    ((y - minY) / Math.max(maxY - minY, 1)) * (MAP_SIZE - 10);
+
+  // convertir path a string para <Polygon />
+  const polygonPoints = mappingPath
+    .map(p => `${scaleX(p.x)},${scaleY(p.y)}`)
+    .join(' ');
+
   return (
     <View style={styles.container}>
       <View style={styles.header}>
@@ -54,20 +71,60 @@ export function LiveMap({
 
       <View style={styles.mapContainer}>
         <View style={styles.mapArea}>
-          {mappingPath.map((point, index) => (
-            <View
-              key={index}
-              style={{
-                position: 'absolute',
-                left: point.x, // aplica escala si necesario
-                top: point.y,
-                width: 4,
-                height: 4,
-                backgroundColor: 'blue',
-                borderRadius: 2,
-              }}
-            />
-          ))}
+          <Svg width="100%" height="100%">
+            {/* Área rellenada */}
+            {mappingPath.length > 2 && (
+              <Polygon
+                points={polygonPoints}
+                fill={`${COLORS.primary}55`} // color con transparencia
+                stroke={COLORS.primary}
+                strokeWidth={1}
+              />
+            )}
+
+            {/* Puntos de mapeo */}
+            {mappingPath.map((p, idx) => (
+              <Circle
+                key={`map-${idx}`}
+                cx={scaleX(p.x)}
+                cy={scaleY(p.y)}
+                r={2}
+                fill="blue"
+              />
+            ))}
+
+            {/* Puntos de corte */}
+            {cuttingPath.map((p, idx) => (
+              <Circle
+                key={`cut-${idx}`}
+                cx={scaleX(p.x)}
+                cy={scaleY(p.y)}
+                r={2}
+                fill="green"
+              />
+            ))}
+
+            {/* Obstáculos */}
+            {obstacles.map((o, idx) => (
+              <Circle
+                key={`obs-${idx}`}
+                cx={scaleX(o.position.x)}
+                cy={scaleY(o.position.y)}
+                r={3}
+                fill="red"
+              />
+            ))}
+
+            {/* Posición actual */}
+            {currentPosition && (
+              <Circle
+                cx={scaleX(currentPosition.x)}
+                cy={scaleY(currentPosition.y)}
+                r={4}
+                fill="yellow"
+              />
+            )}
+          </Svg>
         </View>
       </View>
     </View>
@@ -114,72 +171,5 @@ const styles = StyleSheet.create({
     position: 'relative',
     borderWidth: 2,
     borderColor: COLORS.primary,
-  },
-  mapPlaceholder: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: SPACING.md,
-  },
-  mapText: {
-    fontSize: TYPOGRAPHY.base,
-    fontFamily: TYPOGRAPHY.primaryMedium,
-    color: COLORS.primary,
-    marginBottom: SPACING.md,
-  },
-  statsContainer: {
-    width: '100%',
-  },
-  statItem: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: SPACING.xs,
-  },
-  statLabel: {
-    fontSize: TYPOGRAPHY.sm,
-    fontFamily: TYPOGRAPHY.primary,
-    color: COLORS.gray600,
-  },
-  statValue: {
-    fontSize: TYPOGRAPHY.sm,
-    fontFamily: TYPOGRAPHY.primaryMedium,
-    color: COLORS.primary,
-  },
-  currentPosition: {
-    position: 'absolute',
-    bottom: SPACING.sm,
-    left: SPACING.sm,
-    backgroundColor: COLORS.info,
-    borderRadius: BORDER_RADIUS.md,
-    paddingHorizontal: SPACING.sm,
-    paddingVertical: SPACING.xs,
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  positionDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: COLORS.white,
-    marginRight: SPACING.xs,
-  },
-  positionText: {
-    fontSize: TYPOGRAPHY.xs,
-    fontFamily: TYPOGRAPHY.primary,
-    color: COLORS.white,
-  },
-  obstaclesIndicator: {
-    position: 'absolute',
-    top: SPACING.sm,
-    right: SPACING.sm,
-    backgroundColor: COLORS.warning,
-    borderRadius: BORDER_RADIUS.md,
-    paddingHorizontal: SPACING.sm,
-    paddingVertical: SPACING.xs,
-  },
-  obstaclesText: {
-    fontSize: TYPOGRAPHY.xs,
-    fontFamily: TYPOGRAPHY.primaryMedium,
-    color: COLORS.white,
   },
 });

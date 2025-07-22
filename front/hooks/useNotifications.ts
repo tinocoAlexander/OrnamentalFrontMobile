@@ -77,6 +77,9 @@ export function useNotifications() {
 
   useEffect(() => {
     fetchNotifications();
+
+    const interval = setInterval(fetchNotifications, 10000); // cada 10s
+    return () => clearInterval(interval);
   }, [fetchNotifications]);
 
   return {

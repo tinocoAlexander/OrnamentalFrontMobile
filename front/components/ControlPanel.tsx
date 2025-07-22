@@ -1,26 +1,22 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
-import { Play, Pause, Square, RotateCcw } from 'lucide-react-native';
+import { Play, Square } from 'lucide-react-native';
 import { COLORS, TYPOGRAPHY, SPACING, BORDER_RADIUS, SHADOWS } from '@/constants/theme';
 
 interface ControlPanelProps {
   status: 'idle' | 'mapping' | 'cutting' | 'paused' | 'completed';
   onStart: () => void;
-  onPause: () => void;
   onStop: () => void;
-  onReset?: () => void;
   disabled?: boolean;
 }
 
 /**
- * Panel de control con botones para iniciar, pausar, detener o reiniciar la sesión.
+ * Panel de control con solo dos botones: Iniciar y Detener.
  */
 export function ControlPanel({
   status,
   onStart,
-  onPause,
   onStop,
-  onReset,
   disabled = false,
 }: ControlPanelProps) {
   const getStatusText = () => {
@@ -45,9 +41,8 @@ export function ControlPanel({
     }
   };
 
-  const canStart = status === 'idle' || status === 'paused' || status === 'completed';
-  const canPause = status === 'mapping' || status === 'cutting';
-  const canStop = status === 'mapping' || status === 'cutting' || status === 'paused';
+  const hasSession =
+    status !== 'idle' && status !== 'interrupted';
 
   return (
     <View style={styles.container}>
@@ -59,9 +54,9 @@ export function ControlPanel({
         </Text>
       </View>
 
-      {/* Botones de acción */}
+      {/* Botones */}
       <View style={styles.buttonsRow}>
-        {canStart && (
+        {!hasSession && (
           <TouchableOpacity
             style={[styles.button, styles.start, disabled && styles.disabled]}
             onPress={onStart}
@@ -72,18 +67,7 @@ export function ControlPanel({
           </TouchableOpacity>
         )}
 
-        {canPause && (
-          <TouchableOpacity
-            style={[styles.button, styles.pause, disabled && styles.disabled]}
-            onPress={onPause}
-            disabled={disabled}
-          >
-            <Pause size={24} color={COLORS.white} />
-            <Text style={styles.buttonText}>Pausar</Text>
-          </TouchableOpacity>
-        )}
-
-        {canStop && (
+        {hasSession && (
           <TouchableOpacity
             style={[styles.button, styles.stop, disabled && styles.disabled]}
             onPress={onStop}
@@ -91,17 +75,6 @@ export function ControlPanel({
           >
             <Square size={24} color={COLORS.white} />
             <Text style={styles.buttonText}>Detener</Text>
-          </TouchableOpacity>
-        )}
-
-        {onReset && status === 'completed' && (
-          <TouchableOpacity
-            style={[styles.button, styles.reset, disabled && styles.disabled]}
-            onPress={onReset}
-            disabled={disabled}
-          >
-            <RotateCcw size={24} color={COLORS.white} />
-            <Text style={styles.buttonText}>Reiniciar</Text>
           </TouchableOpacity>
         )}
       </View>
@@ -134,9 +107,8 @@ const styles = StyleSheet.create({
   },
   buttonsRow: {
     flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: SPACING.sm,
-    justifyContent: 'space-between',
+    justifyContent: 'center',
+    marginTop: SPACING.md,
   },
   button: {
     flexDirection: 'row',
@@ -145,22 +117,14 @@ const styles = StyleSheet.create({
     paddingVertical: SPACING.md,
     paddingHorizontal: SPACING.lg,
     borderRadius: BORDER_RADIUS.lg,
-    flex: 1,
-    minWidth: 100,
-    marginBottom: SPACING.sm,
+    minWidth: 120,
     ...SHADOWS.sm,
   },
   start: {
     backgroundColor: COLORS.success,
   },
-  pause: {
-    backgroundColor: COLORS.warning,
-  },
   stop: {
     backgroundColor: COLORS.error,
-  },
-  reset: {
-    backgroundColor: COLORS.primary,
   },
   disabled: {
     opacity: 0.5,
