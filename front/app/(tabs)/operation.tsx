@@ -159,21 +159,9 @@ export default function OperationScreen() {
               <Text style={styles.checklistTitle}>Requisitos</Text>
 
               <View style={styles.checklistItem}>
-                <CheckCircle
-                  size={20}
-                  color={connection.connected ? COLORS.success : COLORS.gray400}
-                />
-                <Text
-                  style={[
-                    styles.checklistText,
-                    {
-                      color: connection.connected
-                        ? COLORS.success
-                        : COLORS.gray400,
-                    },
-                  ]}
-                >
-                  Wi-Fi conectado
+                <CheckCircle color={COLORS.success} />
+                <Text style={{ color: COLORS.success }}>
+                  Wi-Fi no es obligatorio
                 </Text>
               </View>
 

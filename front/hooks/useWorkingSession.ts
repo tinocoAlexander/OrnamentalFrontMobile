@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Session } from '@/types';
 
-const API_URL = 'https://ornamentalbackmobile-production.up.railway.app';
+const API_URL = 'https://ornamentalbackmobile-production.up.railway.app/api';
 
 /**
  * Hook para gestionar las sesiones de trabajo.

@@ -19,7 +19,7 @@ export function useSensorData() {
   const fetchSensorData = async () => {
     setLoading(true);
     try {
-      const { data } = await axios.get<SensorData[]>(`${API_URL}/sensors`);
+      const { data } = await axios.get<SensorData[]>(`${API_URL}/api/sensors/latest`);
       setSensorData(data);
       setError(null);
     } catch (err) {
@@ -31,7 +31,7 @@ export function useSensorData() {
 
   useEffect(() => {
     fetchSensorData();
-    const interval = setInterval(fetchSensorData, 5000); // Actualiza cada 5s
+    const interval = setInterval(fetchSensorData, 10000); // Actualiza cada 5s
     return () => clearInterval(interval);
   }, []);
 
